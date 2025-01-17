@@ -17,7 +17,7 @@ The Todo items and the next available 'todo item ID' are stored in Local Storage
     
 The site has been published on GitHub pages:  
 Link to site:  
-[https://chas-henrik.github.io/ToDo-List-Typescript/](https://chas-henrik.github.io/ToDo-List-Typescript/)
+[https://chas-henrik.github.io/ToDo-List-Typescript-Firebase/](https://chas-henrik.github.io/ToDo-List-Typescript-Firebase/)
 
 ***
 *Known problems:*
