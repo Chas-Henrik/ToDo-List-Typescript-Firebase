@@ -1,5 +1,41 @@
 import { Todo, Todos } from "./types.js"
 import { getTodosLS, setTodosLS } from "./ls.js";
+import { initializeApp } from 'firebase/app';
+import { Firestore, getFirestore, collection, getDocs } from 'firebase/firestore/lite';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+// Follow this pattern to import other Firebase services
+// import { } from 'firebase/<service>';
+
+// TODO: Replace the following with your app's Firebase project configuration
+const firebaseConfig = {
+    apiKey: "API_KEY",
+    authDomain: "PROJECT_ID.firebaseapp.com",
+    // The value of `databaseURL` depends on the location of the database
+    databaseURL: "https://DATABASE_NAME.firebaseio.com",
+    projectId: "PROJECT_ID",
+    // The value of `storageBucket` depends on when you provisioned your default bucket (learn more)
+    storageBucket: "PROJECT_ID.firebasestorage.app",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID",
+    // For Firebase JavaScript SDK v7.20.0 and later, `measurementId` is an optional field
+    measurementId: "G-MEASUREMENT_ID",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Initialize Firebase Authentication and get a reference to the service
+const auth = getAuth(app);
+
+const db: Firestore = getFirestore(app);
+
+// Get a list of cities from your database
+async function getCities(db: Firestore) {
+    const citiesCol = collection(db, 'cities');
+    const citySnapshot = await getDocs(citiesCol);
+    const cityList = citySnapshot.docs.map(doc => doc.data());
+    return cityList;
+}
 
 // Enums
 enum modeEnum {UNKNOWN, ADD, UPDATE};
@@ -8,6 +44,7 @@ enum modeEnum {UNKNOWN, ADD, UPDATE};
 let todosObj: Todos = getTodosLS();
 let dialogTodo: (Todo|null) = null;
 let dialogMode = modeEnum.UNKNOWN;
+let signedInUser = null;
 
 // Main Window elements
 const createAccountImg:(HTMLElement | null) = document.getElementById("create-account-icon");
@@ -34,10 +71,12 @@ todoUL?.addEventListener('click', todoListClicked);
 // Main Window event listeners
 
 function createAccountImgClicked(_: MouseEvent): void {
+    createUser();
     console.log("createAccountImgClicked");
 }
 
 function loginImgClicked(_: MouseEvent): void {
+    loginUser();
     console.log("loginImgClicked");
 }
 
@@ -91,6 +130,33 @@ function todoListClicked(e: Event): void {
 
 
 // Main Window functions
+
+async function createUser() {
+    createUserWithEmailAndPassword(auth, "henrik.suurik@chasacademy.se", "my-top-secret-password")
+    .then((userCredential) => {
+        // Signed up 
+        signedInUser = userCredential.user;
+        console.log("Successfully signed in to server");
+        // ...
+    })
+    .catch((error) => {
+        console.error("error.code: ", error.code, "error.message: ", error.message);
+    });
+}
+
+async function loginUser() {
+    const auth = getAuth();
+    signInWithEmailAndPassword(auth, "henrik.suurik@chasacademy.se", "my-top-secret-password")
+    .then((userCredential) => {
+        // Signed in 
+        signedInUser = userCredential.user;
+        console.log("Successfully signed in to server");
+        // ...
+    })
+    .catch((error) => {
+        console.error("error.code: ", error.code, "error.message: ", error.message);
+    });
+}
 
 function findTodo(id: number): (Todo | null) {
     const index:number = todosObj.todos.findIndex((todo) => todo.id === id);
