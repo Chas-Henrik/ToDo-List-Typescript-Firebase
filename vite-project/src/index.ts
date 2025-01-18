@@ -2,7 +2,7 @@ import { Todo, Todos } from "./types.js"
 import { getTodosLS, setTodosLS } from "./ls.js";
 import { initializeApp } from 'firebase/app';
 import { Firestore, getFirestore, collection, getDocs } from 'firebase/firestore/lite';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, User, UserCredential } from "firebase/auth";
 // Follow this pattern to import other Firebase services
 // import { } from 'firebase/<service>';
 
@@ -39,19 +39,29 @@ async function getCities(db: Firestore) {
 
 // Enums
 enum modeEnum {UNKNOWN, ADD, UPDATE};
+enum userEnum {UNKNOWN, CREATE, LOGIN};
 
 // Global Variables
 let todosObj: Todos = getTodosLS();
 let dialogTodo: (Todo|null) = null;
-let dialogMode = modeEnum.UNKNOWN;
-let signedInUser = null;
+let todoDialogMode = modeEnum.UNKNOWN;
+let loginDialogMode = userEnum.UNKNOWN;
+let signedInUser: User;
 
 // Main Window elements
-const createAccountImg:(HTMLElement | null) = document.getElementById("create-account-icon");
-const loginImg:(HTMLElement | null) = document.getElementById("login-icon");
+const createUserImg:(HTMLElement | null) = document.getElementById("create-user-icon");
+const loginUserImg:(HTMLElement | null) = document.getElementById("login-user-icon");
 const addTodoBtn:(HTMLElement | null) = document.getElementById("add-todo-btn");
 const clearTodoListBtn:(HTMLElement | null) = document.getElementById("clear-todo-list-btn");
 const todoUL:(HTMLElement | null) = document.getElementById("todo-list");
+
+// Login Dialog elements
+const loginDialog:(HTMLElement | null) = document.getElementById("login-dialog");
+const loginDialogHeader:(HTMLElement | null) = document.getElementById("login-dialog-header");
+const loginDialogEmailInput:(HTMLInputElement | null) = document.getElementById("login-dialog-email") as HTMLInputElement;
+const loginDialogPasswordInput:(HTMLInputElement | null) = document.getElementById("login-dialog-password") as HTMLInputElement;
+const loginDialogOkBtn:(HTMLElement | null) = document.getElementById("login-dialog-ok-btn");
+const loginDialogCancelBtn:(HTMLElement | null) = document.getElementById("login-dialog-cancel-btn");
 
 // ToDo Dialog elements
 const todoDialog:(HTMLElement | null) = document.getElementById("todo-dialog");
@@ -61,27 +71,34 @@ const todoDialogCancelBtn:(HTMLElement | null) = document.getElementById("todo-d
 
 
 // Add Main Window event listeners
-createAccountImg?.addEventListener('click', createAccountImgClicked);
-loginImg?.addEventListener('click', loginImgClicked);
+createUserImg?.addEventListener('click', createUserImgClicked);
+loginUserImg?.addEventListener('click', loginUserImgClicked);
 addTodoBtn?.addEventListener('click', AddTodoBtnClicked);
 clearTodoListBtn?.addEventListener('click', clearTodoListClicked);
 todoUL?.addEventListener('click', todoListClicked);
 
-
 // Main Window event listeners
 
-function createAccountImgClicked(_: MouseEvent): void {
-    createUser();
-    console.log("createAccountImgClicked");
+function createUserImgClicked(_: MouseEvent): void {
+    if(loginDialog) {
+        loginDialogMode = userEnum.CREATE;
+        if(loginDialogHeader)
+            loginDialogHeader.textContent = "User Create";
+        showLoginDialog();
+    }
 }
 
-function loginImgClicked(_: MouseEvent): void {
-    loginUser();
-    console.log("loginImgClicked");
+function loginUserImgClicked(_: MouseEvent): void {
+    if(loginDialog) {
+        loginDialogMode = userEnum.LOGIN;
+        if(loginDialogHeader)
+            loginDialogHeader.textContent = "User Login";
+        showLoginDialog();
+    }
 }
 
 function AddTodoBtnClicked(_: MouseEvent): void {
-    dialogMode = modeEnum.ADD;
+    todoDialogMode = modeEnum.ADD;
     showTodoDialog(null);
 }
 
@@ -111,7 +128,7 @@ function todoListClicked(e: Event): void {
                     id = parseInt(parentElement.dataset.id || '-1');
                     foundTodo = findTodo(id);
                     if(foundTodo) {
-                        dialogMode = modeEnum.UPDATE;
+                        todoDialogMode = modeEnum.UPDATE;
                         showTodoDialog(foundTodo);
                     }
                     break;
@@ -130,33 +147,6 @@ function todoListClicked(e: Event): void {
 
 
 // Main Window functions
-
-async function createUser() {
-    createUserWithEmailAndPassword(auth, "henrik.suurik@chasacademy.se", "my-top-secret-password")
-    .then((userCredential) => {
-        // Signed up 
-        signedInUser = userCredential.user;
-        console.log("Successfully signed in to server");
-        // ...
-    })
-    .catch((error) => {
-        console.error("error.code: ", error.code, "error.message: ", error.message);
-    });
-}
-
-async function loginUser() {
-    const auth = getAuth();
-    signInWithEmailAndPassword(auth, "henrik.suurik@chasacademy.se", "my-top-secret-password")
-    .then((userCredential) => {
-        // Signed in 
-        signedInUser = userCredential.user;
-        console.log("Successfully signed in to server");
-        // ...
-    })
-    .catch((error) => {
-        console.error("error.code: ", error.code, "error.message: ", error.message);
-    });
-}
 
 function findTodo(id: number): (Todo | null) {
     const index:number = todosObj.todos.findIndex((todo) => todo.id === id);
@@ -208,22 +198,95 @@ function renderTodoList(): void {
     }
 }
 
+// Login Dialog
+
+// Add Login Dialog event listeners
+
+loginDialogOkBtn?.addEventListener('click', loginDialogOkClicked);
+loginDialogCancelBtn?.addEventListener('click', loginDialogCancelClicked);
+
+// Login Dialog event listeners
+
+async function loginDialogOkClicked(e: MouseEvent) {
+    if(loginDialogEmailInput === null || loginDialogPasswordInput === null || 
+        !loginDialogEmailInput.validity.valid || !loginDialogPasswordInput.validity.valid
+    ) {
+        return;
+    }
+    e.preventDefault();
+
+    try {
+        const userCredential: UserCredential = await Authenticate(
+            (loginDialogEmailInput as HTMLInputElement).value, 
+            (loginDialogPasswordInput as HTMLInputElement).value);
+        signedInUser = userCredential.user;   
+    } catch (error) {
+        console.error(error);
+        alert(error);
+    }
+
+    closeLoginDialog();
+}
+
+function loginDialogCancelClicked(_: MouseEvent): void {
+    closeLoginDialog();
+}
+
+// Login Dialog functions
+
+async function Authenticate(email:string, password:string): Promise<UserCredential> {
+    const auth = getAuth();
+
+    switch(loginDialogMode) {
+        case userEnum.CREATE:
+            return createUserWithEmailAndPassword(auth, (loginDialogEmailInput as HTMLInputElement).value, (loginDialogPasswordInput as HTMLInputElement).value)
+            .then((userCredential) => {
+                alert("Created new user!");
+                return userCredential;
+            })
+            .catch((error) => {
+                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                console.error(errorStr);
+                throw new Error(errorStr);
+            });
+        case userEnum.LOGIN:
+            return signInWithEmailAndPassword(auth, (loginDialogEmailInput as HTMLInputElement).value, (loginDialogPasswordInput as HTMLInputElement).value)
+            .then((userCredential) => {
+                alert("Login success!");
+                return userCredential;
+            })
+            .catch((error) => {
+                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                console.error(errorStr);
+                throw new Error(errorStr);
+            });
+        default:
+            throw new Error("Invalid loginDialogMode");
+    }
+}
+
+function showLoginDialog(): void {
+    (loginDialog as HTMLDialogElement)?.showModal();
+}
+
+function closeLoginDialog(): void {
+    if (loginDialogEmailInput)
+        loginDialogEmailInput.value = "";
+
+    if(loginDialogPasswordInput)
+        loginDialogPasswordInput.value = "";
+
+    (loginDialog as HTMLDialogElement)?.close();
+}
+
 
 // Todo Dialog
 
 
 // Add Todo Dialog event listeners
 
-if(todoDialogOkBtn)
-    todoDialogOkBtn.addEventListener('click', todoDialogOkClicked);
-else
-    console.error("todoDialogOkBtn===null");
-
-if(todoDialogCancelBtn)
-    todoDialogCancelBtn.addEventListener('click', todoDialogCancelClicked);
-else
-    console.error("todoDialogCancelBtn===null");
-    
+todoDialogOkBtn?.addEventListener('click', todoDialogOkClicked);
+todoDialogCancelBtn?.addEventListener('click', todoDialogCancelClicked);
 
 
 // Todo Dialog event listeners
@@ -233,19 +296,19 @@ function todoDialogOkClicked(e: MouseEvent): void {
         return;
     }
 
-    switch(dialogMode) {
+    switch(todoDialogMode) {
         case modeEnum.ADD:
             addTodo(todoDialogTextArea.value);
             renderTodoList();
             break;
         case modeEnum.UPDATE:
             if(dialogTodo){
-                updateTodo(dialogTodo.id, todoDialogTextArea.value)
+                updateTodo(dialogTodo.id, todoDialogTextArea.value);
                 renderTodoList();
             }
             break;
         case modeEnum.UNKNOWN:
-            console.error("todoDialogOkClicked - Error: dialogMode is modeEnum.UNKNOWN")
+            console.error("todoDialogOkClicked - Error: todoDialogMode is modeEnum.UNKNOWN")
             break;
     }
 
@@ -265,17 +328,14 @@ function showTodoDialog(todo: (Todo|null)): void {
     if(todoDialogTextArea) {
         (todoDialogTextArea as HTMLTextAreaElement).value = (dialogTodo)? dialogTodo.text : '';
     }
-    if(todoDialog) {
-        (todoDialog as HTMLDialogElement).showModal();
-    }
+    (todoDialog as HTMLDialogElement)?.showModal();
 }
 
 function closeTodoDialog(): void {
     if(todoDialogTextArea)
         (todoDialogTextArea as HTMLTextAreaElement).value = "";
 
-    if(todoDialog)
-        (todoDialog as HTMLDialogElement).close();
+    (todoDialog as HTMLDialogElement)?.close();
 }
 
 

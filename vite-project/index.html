@@ -10,8 +10,8 @@
 </head>
 <body>
     <header>
-        <img id="create-account-icon" src="./svg/create_account.svg" alt="Create Account Icon" title="Create Account">
-        <img id="login-icon" src="./svg/login.svg" alt="Login Icon" title="Login">
+        <img id="create-user-icon" src="./svg/create_user.svg" alt="Create User Icon" title="Create User">
+        <img id="login-user-icon" src="./svg/login_user.svg" alt="Login User Icon" title="Login User">
     </header>
     <main>
         <h1 class="text-align-center">Todo List</h1>
@@ -26,6 +26,23 @@
         </div>
         <ul id="todo-list" class="grid-container-width grid-container-height grid-list-font"></ul>
     </main>
+    <dialog id="login-dialog">
+        <h2 id="login-dialog-header">Login</h2>
+        <form>
+            <div class="login-dialog-input-container">
+              <label for="login-dialog-email">E-mail:</label>
+              <input id="login-dialog-email" type="email" placeholder="e.g. sven.svensson@chasacademy.se" title="Enter your E-mail address here" required>
+            </div>
+            <div class="login-dialog-input-container">
+              <label for="login-dialog-password">Password:</label>
+              <input id="login-dialog-password" type="password" placeholder="password (6 characters minimum)" minlength="6" title="Enter your secret password here" required>
+            </div>
+            <div id="login-dialog-btn-container">
+                <button id="login-dialog-ok-btn" type="submit">Ok</button>
+                <button id="login-dialog-cancel-btn" type="button">Cancel</button>
+            </div>
+        </form>
+    </dialog>
     <dialog id="todo-dialog">
         <h2>ToDo</h2>
         <form>

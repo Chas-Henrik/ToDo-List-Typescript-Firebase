@@ -49,39 +49,62 @@ var modeEnum;
     modeEnum[modeEnum["UPDATE"] = 2] = "UPDATE";
 })(modeEnum || (modeEnum = {}));
 ;
+var userEnum;
+(function (userEnum) {
+    userEnum[userEnum["UNKNOWN"] = 0] = "UNKNOWN";
+    userEnum[userEnum["CREATE"] = 1] = "CREATE";
+    userEnum[userEnum["LOGIN"] = 2] = "LOGIN";
+})(userEnum || (userEnum = {}));
+;
 // Global Variables
 let todosObj = getTodosLS();
 let dialogTodo = null;
-let dialogMode = modeEnum.UNKNOWN;
-let signedInUser = null;
+let todoDialogMode = modeEnum.UNKNOWN;
+let loginDialogMode = userEnum.UNKNOWN;
+let signedInUser;
 // Main Window elements
-const createAccountImg = document.getElementById("create-account-icon");
-const loginImg = document.getElementById("login-icon");
+const createUserImg = document.getElementById("create-user-icon");
+const loginUserImg = document.getElementById("login-user-icon");
 const addTodoBtn = document.getElementById("add-todo-btn");
 const clearTodoListBtn = document.getElementById("clear-todo-list-btn");
 const todoUL = document.getElementById("todo-list");
+// Login Dialog elements
+const loginDialog = document.getElementById("login-dialog");
+const loginDialogHeader = document.getElementById("login-dialog-header");
+const loginDialogEmailInput = document.getElementById("login-dialog-email");
+const loginDialogPasswordInput = document.getElementById("login-dialog-password");
+const loginDialogOkBtn = document.getElementById("login-dialog-ok-btn");
+const loginDialogCancelBtn = document.getElementById("login-dialog-cancel-btn");
 // ToDo Dialog elements
 const todoDialog = document.getElementById("todo-dialog");
 const todoDialogTextArea = document.getElementById("todo-dialog-textarea");
 const todoDialogOkBtn = document.getElementById("todo-dialog-ok-btn");
 const todoDialogCancelBtn = document.getElementById("todo-dialog-cancel-btn");
 // Add Main Window event listeners
-createAccountImg === null || createAccountImg === void 0 ? void 0 : createAccountImg.addEventListener('click', createAccountImgClicked);
-loginImg === null || loginImg === void 0 ? void 0 : loginImg.addEventListener('click', loginImgClicked);
+createUserImg === null || createUserImg === void 0 ? void 0 : createUserImg.addEventListener('click', createUserImgClicked);
+loginUserImg === null || loginUserImg === void 0 ? void 0 : loginUserImg.addEventListener('click', loginUserImgClicked);
 addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.addEventListener('click', AddTodoBtnClicked);
 clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.addEventListener('click', clearTodoListClicked);
 todoUL === null || todoUL === void 0 ? void 0 : todoUL.addEventListener('click', todoListClicked);
 // Main Window event listeners
-function createAccountImgClicked(_) {
-    createUser();
-    console.log("createAccountImgClicked");
+function createUserImgClicked(_) {
+    if (loginDialog) {
+        loginDialogMode = userEnum.CREATE;
+        if (loginDialogHeader)
+            loginDialogHeader.textContent = "User Create";
+        showLoginDialog();
+    }
 }
-function loginImgClicked(_) {
-    loginUser();
-    console.log("loginImgClicked");
+function loginUserImgClicked(_) {
+    if (loginDialog) {
+        loginDialogMode = userEnum.LOGIN;
+        if (loginDialogHeader)
+            loginDialogHeader.textContent = "User Login";
+        showLoginDialog();
+    }
 }
 function AddTodoBtnClicked(_) {
-    dialogMode = modeEnum.ADD;
+    todoDialogMode = modeEnum.ADD;
     showTodoDialog(null);
 }
 function clearTodoListClicked(_) {
@@ -109,7 +132,7 @@ function todoListClicked(e) {
                     id = parseInt(parentElement.dataset.id || '-1');
                     foundTodo = findTodo(id);
                     if (foundTodo) {
-                        dialogMode = modeEnum.UPDATE;
+                        todoDialogMode = modeEnum.UPDATE;
                         showTodoDialog(foundTodo);
                     }
                     break;
@@ -126,35 +149,6 @@ function todoListClicked(e) {
     }
 }
 // Main Window functions
-function createUser() {
-    return __awaiter(this, void 0, void 0, function* () {
-        createUserWithEmailAndPassword(auth, "henrik.suurik@chasacademy.se", "my-top-secret-password")
-            .then((userCredential) => {
-            // Signed up 
-            signedInUser = userCredential.user;
-            console.log("Successfully signed in to server");
-            // ...
-        })
-            .catch((error) => {
-            console.error("error.code: ", error.code, "error.message: ", error.message);
-        });
-    });
-}
-function loginUser() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const auth = getAuth();
-        signInWithEmailAndPassword(auth, "henrik.suurik@chasacademy.se", "my-top-secret-password")
-            .then((userCredential) => {
-            // Signed in 
-            signedInUser = userCredential.user;
-            console.log("Successfully signed in to server");
-            // ...
-        })
-            .catch((error) => {
-            console.error("error.code: ", error.code, "error.message: ", error.message);
-        });
-    });
-}
 function findTodo(id) {
     const index = todosObj.todos.findIndex((todo) => todo.id === id);
     if (index !== -1) {
@@ -200,22 +194,84 @@ function renderTodoList() {
         }).join('');
     }
 }
+// Login Dialog
+// Add Login Dialog event listeners
+loginDialogOkBtn === null || loginDialogOkBtn === void 0 ? void 0 : loginDialogOkBtn.addEventListener('click', loginDialogOkClicked);
+loginDialogCancelBtn === null || loginDialogCancelBtn === void 0 ? void 0 : loginDialogCancelBtn.addEventListener('click', loginDialogCancelClicked);
+// Login Dialog event listeners
+function loginDialogOkClicked(e) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (loginDialogEmailInput === null || loginDialogPasswordInput === null ||
+            !loginDialogEmailInput.validity.valid || !loginDialogPasswordInput.validity.valid) {
+            return;
+        }
+        e.preventDefault();
+        try {
+            const userCredential = yield Authenticate(loginDialogEmailInput.value, loginDialogPasswordInput.value);
+            signedInUser = userCredential.user;
+        }
+        catch (error) {
+            console.error(error);
+            alert(error);
+        }
+        closeLoginDialog();
+    });
+}
+function loginDialogCancelClicked(_) {
+    closeLoginDialog();
+}
+// Login Dialog functions
+function Authenticate(email, password) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const auth = getAuth();
+        switch (loginDialogMode) {
+            case userEnum.CREATE:
+                return createUserWithEmailAndPassword(auth, loginDialogEmailInput.value, loginDialogPasswordInput.value)
+                    .then((userCredential) => {
+                    alert("Created new user!");
+                    return userCredential;
+                })
+                    .catch((error) => {
+                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    console.error(errorStr);
+                    throw new Error(errorStr);
+                });
+            case userEnum.LOGIN:
+                return signInWithEmailAndPassword(auth, loginDialogEmailInput.value, loginDialogPasswordInput.value)
+                    .then((userCredential) => {
+                    alert("Login success!");
+                    return userCredential;
+                })
+                    .catch((error) => {
+                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    console.error(errorStr);
+                    throw new Error(errorStr);
+                });
+            default:
+                throw new Error("Invalid loginDialogMode");
+        }
+    });
+}
+function showLoginDialog() {
+    loginDialog === null || loginDialog === void 0 ? void 0 : loginDialog.showModal();
+}
+function closeLoginDialog() {
+    if (loginDialogEmailInput)
+        loginDialogEmailInput.value = "";
+    if (loginDialogPasswordInput)
+        loginDialogPasswordInput.value = "";
+    loginDialog === null || loginDialog === void 0 ? void 0 : loginDialog.close();
+}
 // Todo Dialog
 // Add Todo Dialog event listeners
-if (todoDialogOkBtn)
-    todoDialogOkBtn.addEventListener('click', todoDialogOkClicked);
-else
-    console.error("todoDialogOkBtn===null");
-if (todoDialogCancelBtn)
-    todoDialogCancelBtn.addEventListener('click', todoDialogCancelClicked);
-else
-    console.error("todoDialogCancelBtn===null");
+todoDialogOkBtn === null || todoDialogOkBtn === void 0 ? void 0 : todoDialogOkBtn.addEventListener('click', todoDialogOkClicked);
+todoDialogCancelBtn === null || todoDialogCancelBtn === void 0 ? void 0 : todoDialogCancelBtn.addEventListener('click', todoDialogCancelClicked);
 // Todo Dialog event listeners
 function todoDialogOkClicked(e) {
     if (todoDialogTextArea === null || todoDialogTextArea.value === "") {
         return;
     }
-    switch (dialogMode) {
+    switch (todoDialogMode) {
         case modeEnum.ADD:
             addTodo(todoDialogTextArea.value);
             renderTodoList();
@@ -227,7 +283,7 @@ function todoDialogOkClicked(e) {
             }
             break;
         case modeEnum.UNKNOWN:
-            console.error("todoDialogOkClicked - Error: dialogMode is modeEnum.UNKNOWN");
+            console.error("todoDialogOkClicked - Error: todoDialogMode is modeEnum.UNKNOWN");
             break;
     }
     e.preventDefault();
@@ -242,15 +298,12 @@ function showTodoDialog(todo) {
     if (todoDialogTextArea) {
         todoDialogTextArea.value = (dialogTodo) ? dialogTodo.text : '';
     }
-    if (todoDialog) {
-        todoDialog.showModal();
-    }
+    todoDialog === null || todoDialog === void 0 ? void 0 : todoDialog.showModal();
 }
 function closeTodoDialog() {
     if (todoDialogTextArea)
         todoDialogTextArea.value = "";
-    if (todoDialog)
-        todoDialog.close();
+    todoDialog === null || todoDialog === void 0 ? void 0 : todoDialog.close();
 }
 // Global Initializations
 renderTodoList();
