@@ -8,39 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { getTodosLS, setTodosLS } from "./ls.js";
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-// Follow this pattern to import other Firebase services
-// import { } from 'firebase/<service>';
-// TODO: Replace the following with your app's Firebase project configuration
-const firebaseConfig = {
-    apiKey: "API_KEY",
-    authDomain: "PROJECT_ID.firebaseapp.com",
-    // The value of `databaseURL` depends on the location of the database
-    databaseURL: "https://DATABASE_NAME.firebaseio.com",
-    projectId: "PROJECT_ID",
-    // The value of `storageBucket` depends on when you provisioned your default bucket (learn more)
-    storageBucket: "PROJECT_ID.firebasestorage.app",
-    messagingSenderId: "SENDER_ID",
-    appId: "APP_ID",
-    // For Firebase JavaScript SDK v7.20.0 and later, `measurementId` is an optional field
-    measurementId: "G-MEASUREMENT_ID",
-};
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-// Initialize Firebase Authentication and get a reference to the service
-const auth = getAuth(app);
-const db = getFirestore(app);
-// Get a list of cities from your database
-function getCities(db) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const citiesCol = collection(db, 'cities');
-        const citySnapshot = yield getDocs(citiesCol);
-        const cityList = citySnapshot.docs.map(doc => doc.data());
-        return cityList;
-    });
-}
+import { app } from "./firestore.js";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 // Enums
 var modeEnum;
 (function (modeEnum) {
@@ -207,7 +176,7 @@ function loginDialogOkClicked(e) {
         }
         e.preventDefault();
         try {
-            const userCredential = yield Authenticate(loginDialogEmailInput.value, loginDialogPasswordInput.value);
+            const userCredential = yield Authenticate();
             signedInUser = userCredential.user;
         }
         catch (error) {
@@ -221,25 +190,15 @@ function loginDialogCancelClicked(_) {
     closeLoginDialog();
 }
 // Login Dialog functions
-function Authenticate(email, password) {
+function Authenticate() {
     return __awaiter(this, void 0, void 0, function* () {
-        const auth = getAuth();
+        const auth = getAuth(app);
         switch (loginDialogMode) {
             case userEnum.CREATE:
+            case userEnum.LOGIN:
                 return createUserWithEmailAndPassword(auth, loginDialogEmailInput.value, loginDialogPasswordInput.value)
                     .then((userCredential) => {
-                    alert("Created new user!");
-                    return userCredential;
-                })
-                    .catch((error) => {
-                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
-                    console.error(errorStr);
-                    throw new Error(errorStr);
-                });
-            case userEnum.LOGIN:
-                return signInWithEmailAndPassword(auth, loginDialogEmailInput.value, loginDialogPasswordInput.value)
-                    .then((userCredential) => {
-                    alert("Login success!");
+                    alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
                     return userCredential;
                 })
                     .catch((error) => {
