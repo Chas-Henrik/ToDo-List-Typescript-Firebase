@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { getTodosLS, setTodosLS } from "./ls.js";
 import { app } from "./firestore.js";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 // Enums
 var modeEnum;
 (function (modeEnum) {
@@ -195,8 +195,18 @@ function Authenticate() {
         const auth = getAuth(app);
         switch (loginDialogMode) {
             case userEnum.CREATE:
-            case userEnum.LOGIN:
                 return createUserWithEmailAndPassword(auth, loginDialogEmailInput.value, loginDialogPasswordInput.value)
+                    .then((userCredential) => {
+                    alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
+                    return userCredential;
+                })
+                    .catch((error) => {
+                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    console.error(errorStr);
+                    throw new Error(errorStr);
+                });
+            case userEnum.LOGIN:
+                return signInWithEmailAndPassword(auth, loginDialogEmailInput.value, loginDialogPasswordInput.value)
                     .then((userCredential) => {
                     alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
                     return userCredential;

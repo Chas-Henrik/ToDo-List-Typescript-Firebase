@@ -204,19 +204,31 @@ async function Authenticate(): Promise<UserCredential> {
 
     switch (loginDialogMode) {
         case userEnum.CREATE:
+            return createUserWithEmailAndPassword(auth, 
+                (loginDialogEmailInput as HTMLInputElement).value, 
+                (loginDialogPasswordInput as HTMLInputElement).value)
+            .then((userCredential) => {
+                alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
+                return userCredential;
+            })
+            .catch((error) => {
+                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                console.error(errorStr);
+                throw new Error(errorStr);
+            });
         case userEnum.LOGIN:
-                return createUserWithEmailAndPassword(auth, 
-                    (loginDialogEmailInput as HTMLInputElement).value, 
-                    (loginDialogPasswordInput as HTMLInputElement).value)
-                .then((userCredential) => {
-                    alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
-                    return userCredential;
-                })
-                .catch((error) => {
-                    const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
-                    console.error(errorStr);
-                    throw new Error(errorStr);
-                });
+            return signInWithEmailAndPassword(auth, 
+                (loginDialogEmailInput as HTMLInputElement).value, 
+                (loginDialogPasswordInput as HTMLInputElement).value)
+            .then((userCredential) => {
+                alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
+                return userCredential;
+            })
+            .catch((error) => {
+                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                console.error(errorStr);
+                throw new Error(errorStr);
+            });
         default:
             throw new Error("Invalid loginDialogMode");
     }
