@@ -175,13 +175,39 @@ function loginDialogOkClicked(e) {
             return;
         }
         e.preventDefault();
-        try {
-            const userCredential = yield Authenticate();
-            signedInUser = userCredential.user;
-        }
-        catch (error) {
-            console.error(error);
-            alert(error);
+        const auth = getAuth(app);
+        const email = loginDialogEmailInput.value;
+        const psw = loginDialogPasswordInput.value;
+        switch (loginDialogMode) {
+            case userEnum.CREATE:
+                createUserWithEmailAndPassword(auth, email, psw)
+                    .then((userCredential) => {
+                    alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                    signedInUser = userCredential.user;
+                })
+                    .catch((error) => {
+                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    console.error(errorStr);
+                    alert(errorStr);
+                });
+                break;
+            case userEnum.LOGIN:
+                signInWithEmailAndPassword(auth, email, psw)
+                    .then((userCredential) => {
+                    alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                    signedInUser = userCredential.user;
+                })
+                    .catch((error) => {
+                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    console.error(errorStr);
+                    alert(errorStr);
+                });
+                break;
+            default:
+                const errorStr = `Invalid loginDialogMode (${loginDialogMode})`;
+                console.error(errorStr);
+                alert(errorStr);
+                break;
         }
         closeLoginDialog();
     });
@@ -190,37 +216,6 @@ function loginDialogCancelClicked(_) {
     closeLoginDialog();
 }
 // Login Dialog functions
-function Authenticate() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const auth = getAuth(app);
-        switch (loginDialogMode) {
-            case userEnum.CREATE:
-                return createUserWithEmailAndPassword(auth, loginDialogEmailInput.value, loginDialogPasswordInput.value)
-                    .then((userCredential) => {
-                    alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
-                    return userCredential;
-                })
-                    .catch((error) => {
-                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
-                    console.error(errorStr);
-                    throw new Error(errorStr);
-                });
-            case userEnum.LOGIN:
-                return signInWithEmailAndPassword(auth, loginDialogEmailInput.value, loginDialogPasswordInput.value)
-                    .then((userCredential) => {
-                    alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
-                    return userCredential;
-                })
-                    .catch((error) => {
-                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
-                    console.error(errorStr);
-                    throw new Error(errorStr);
-                });
-            default:
-                throw new Error("Invalid loginDialogMode");
-        }
-    });
-}
 function showLoginDialog() {
     loginDialog === null || loginDialog === void 0 ? void 0 : loginDialog.showModal();
 }

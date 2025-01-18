@@ -1,7 +1,7 @@
 import { Todo, Todos } from "./types.js"
 import { getTodosLS, setTodosLS } from "./ls.js";
 import { app, db, getTodosFirestore } from "./firestore.js";
-import { Auth, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, User, UserCredential } from "firebase/auth";
+import { Auth, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from "firebase/auth";
 
 
 // Enums
@@ -182,12 +182,40 @@ async function loginDialogOkClicked(e: MouseEvent) {
     }
     e.preventDefault();
 
-    try {
-        const userCredential: UserCredential = await Authenticate();
-        signedInUser = userCredential.user;   
-    } catch (error) {
-        console.error(error);
-        alert(error);
+    const auth: Auth = getAuth(app);
+    const email: string = (loginDialogEmailInput as HTMLInputElement).value;
+    const psw: string = (loginDialogPasswordInput as HTMLInputElement).value;
+
+    switch (loginDialogMode) {
+        case userEnum.CREATE:
+            createUserWithEmailAndPassword(auth, email, psw)
+            .then((userCredential) => {
+                alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                signedInUser = userCredential.user;
+            })
+            .catch((error) => {
+                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                console.error(errorStr);
+                alert(errorStr);
+            });
+            break;
+        case userEnum.LOGIN:
+            signInWithEmailAndPassword(auth, email, psw)
+            .then((userCredential) => {
+                alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                signedInUser = userCredential.user;
+            })
+            .catch((error) => {
+                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                console.error(errorStr);
+                alert(errorStr);
+            });
+            break;
+        default:
+            const errorStr: string = `Invalid loginDialogMode (${loginDialogMode})`
+            console.error(errorStr);
+            alert(errorStr);
+            break;
     }
 
     closeLoginDialog();
@@ -198,41 +226,6 @@ function loginDialogCancelClicked(_: MouseEvent): void {
 }
 
 // Login Dialog functions
-
-async function Authenticate(): Promise<UserCredential> {
-    const auth: Auth = getAuth(app);
-
-    switch (loginDialogMode) {
-        case userEnum.CREATE:
-            return createUserWithEmailAndPassword(auth, 
-                (loginDialogEmailInput as HTMLInputElement).value, 
-                (loginDialogPasswordInput as HTMLInputElement).value)
-            .then((userCredential) => {
-                alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
-                return userCredential;
-            })
-            .catch((error) => {
-                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
-                console.error(errorStr);
-                throw new Error(errorStr);
-            });
-        case userEnum.LOGIN:
-            return signInWithEmailAndPassword(auth, 
-                (loginDialogEmailInput as HTMLInputElement).value, 
-                (loginDialogPasswordInput as HTMLInputElement).value)
-            .then((userCredential) => {
-                alert(`User ${userCredential.user.email} ${userCredential.operationType}!`);
-                return userCredential;
-            })
-            .catch((error) => {
-                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
-                console.error(errorStr);
-                throw new Error(errorStr);
-            });
-        default:
-            throw new Error("Invalid loginDialogMode");
-    }
-}
 
 function showLoginDialog(): void {
     (loginDialog as HTMLDialogElement)?.showModal();
