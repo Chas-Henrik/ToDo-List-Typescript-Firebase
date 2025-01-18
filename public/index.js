@@ -12,6 +12,8 @@ let todosObj = getTodosLS();
 let dialogTodo = null;
 let dialogMode = modeEnum.UNKNOWN;
 // Main Window elements
+const createAccountImg = document.getElementById("create-account-icon");
+const loginImg = document.getElementById("login-icon");
 const addTodoBtn = document.getElementById("add-todo-btn");
 const clearTodoListBtn = document.getElementById("clear-todo-list-btn");
 const todoUL = document.getElementById("todo-list");
@@ -21,19 +23,18 @@ const todoDialogTextArea = document.getElementById("todo-dialog-textarea");
 const todoDialogOkBtn = document.getElementById("todo-dialog-ok-btn");
 const todoDialogCancelBtn = document.getElementById("todo-dialog-cancel-btn");
 // Add Main Window event listeners
-if (addTodoBtn)
-    addTodoBtn.addEventListener('click', AddTodoBtnClicked);
-else
-    console.error("addTodoBtn===null");
-if (clearTodoListBtn)
-    clearTodoListBtn.addEventListener('click', clearTodoListClicked);
-else
-    console.error("clearTodoListBtn===null");
-if (todoUL)
-    todoUL.addEventListener('click', todoListClicked);
-else
-    console.error("todoUL===null");
+createAccountImg === null || createAccountImg === void 0 ? void 0 : createAccountImg.addEventListener('click', createAccountImgClicked);
+loginImg === null || loginImg === void 0 ? void 0 : loginImg.addEventListener('click', loginImgClicked);
+addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.addEventListener('click', AddTodoBtnClicked);
+clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.addEventListener('click', clearTodoListClicked);
+todoUL === null || todoUL === void 0 ? void 0 : todoUL.addEventListener('click', todoListClicked);
 // Main Window event listeners
+function createAccountImgClicked(_) {
+    console.log("createAccountImgClicked");
+}
+function loginImgClicked(_) {
+    console.log("loginImgClicked");
+}
 function AddTodoBtnClicked(_) {
     dialogMode = modeEnum.ADD;
     showTodoDialog(null);

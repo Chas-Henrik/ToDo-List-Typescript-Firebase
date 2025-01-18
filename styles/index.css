@@ -41,6 +41,20 @@ h2 {
 
 /* Todo Buttons */
 
+#create-account-icon {
+    position: fixed;
+    top: 2rem;
+    right: 5rem;
+    cursor: pointer;
+}
+
+#login-icon {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    cursor: pointer;
+}
+
 .button-container {
     height: fit-content;
     margin: 3rem auto;
