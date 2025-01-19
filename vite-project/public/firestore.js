@@ -8,12 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
+import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, deleteDoc, query } from "firebase/firestore/lite";
 import { getAuth } from "firebase/auth";
-const defaultTodos = {
-    nextId: 0,
-    todos: []
-};
 // Follow this pattern to import other Firebase services
 // import { } from 'firebase/<service>';
 // TODO: Replace the following with your app's Firebase project configuration
@@ -34,22 +30,88 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 // Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app);
+// Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);
-// Get a list of cities from your database
-function getCities(db) {
+export function createTodoFirestore() {
     return __awaiter(this, void 0, void 0, function* () {
-        const citiesCol = collection(db, 'cities');
-        const citySnapshot = yield getDocs(citiesCol);
-        const cityList = citySnapshot.docs.map(doc => doc.data());
-        return cityList;
+        // Add a new document with a generated id.
+        const todo = { id: -1, text: '', done: false };
+        try {
+            const docRef = yield addDoc(collection(db, "todos"), todo);
+            todo.id = parseInt(docRef.id);
+            return todo;
+        }
+        catch (error) {
+            console.error("Error", error);
+            return null;
+        }
     });
 }
-// Get a list of cities from your database
-export function getTodosFirestore(db) {
+export function readTodoFirestore(id) {
     return __awaiter(this, void 0, void 0, function* () {
-        const todosCol = collection(db, 'todos');
-        const todoSnapshot = yield getDocs(todosCol);
-        const todoList = todoSnapshot.docs.map(doc => doc.data());
-        return defaultTodos;
+        // Get a todo from your database
+        try {
+            const docRef = doc(db, "todos", `${id}`);
+            const docSnap = yield getDoc(docRef);
+            if (docSnap.exists()) {
+                return docSnap.data();
+            }
+            else {
+                return null;
+            }
+        }
+        catch (error) {
+            console.error("Error", error);
+            return null;
+        }
+    });
+}
+export function readTodosFirestore() {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Get a list of todos from your database
+        try {
+            const todosQuery = query(collection(db, 'todos'));
+            const querySnapshot = yield getDocs(todosQuery);
+            return querySnapshot.docs.map(doc => doc.data());
+        }
+        catch (error) {
+            console.error("Error", error);
+            return [];
+        }
+    });
+}
+export function updateTodoFirestore(todo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Add or update a document in collection "todos"
+        try {
+            yield setDoc(doc(db, 'todos', `${todo.id}`), todo);
+        }
+        catch (error) {
+            console.error("Error", error);
+        }
+    });
+}
+export function deleteTodoFirestore(todo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Delete a todo in your database
+        try {
+            yield deleteDoc(doc(db, "todos", `${todo.id}`));
+        }
+        catch (error) {
+            console.error("Error", error);
+        }
+    });
+}
+export function deleteTodosFirestore(todos) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Delete a todo in your database
+        try {
+            for (const todo of todos) {
+                yield deleteTodoFirestore(todo);
+            }
+        }
+        catch (error) {
+            console.error("Error", error);
+        }
     });
 }
