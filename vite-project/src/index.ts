@@ -1,6 +1,6 @@
 import { Todo, Todos } from "./types.js"
 import { getTodosLS, setTodosLS } from "./ls.js";
-import { app, db, createTodoFirestore, readTodoFirestore, readTodosFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
+import { app, db, createTodoFirestore, readTodoFirestore, readTodosFirestore, updateTodoFirestore, updateDoneFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
 import { Auth, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from "firebase/auth";
 
 

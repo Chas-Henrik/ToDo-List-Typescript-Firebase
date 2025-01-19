@@ -1,6 +1,6 @@
 import { Todos, Todo } from "./types.js"
 import { initializeApp } from 'firebase/app';
-import { Firestore, getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, deleteDoc, query } from "firebase/firestore/lite";
+import { Firestore, getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query } from "firebase/firestore/lite";
 import { getAuth } from "firebase/auth";
 
 // Follow this pattern to import other Firebase services
@@ -76,6 +76,16 @@ export async function updateTodoFirestore(todo:Todo): Promise<void> {
     // Add or update a document in collection "todos"
     try {
         await setDoc(doc(db, 'todos', `${todo.id}`), todo);
+    } catch (error) {
+        console.error("Error", error);
+    }
+}
+
+export async function updateDoneFirestore(todo:Todo): Promise<void> {
+    // Add or update a document in collection "todos"
+    try {
+        const todoRef = doc(db, 'todos', `${todo.id}`);
+        await updateDoc(todoRef, {Done: todo.done});
     } catch (error) {
         console.error("Error", error);
     }
