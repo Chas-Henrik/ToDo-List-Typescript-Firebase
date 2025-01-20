@@ -1,7 +1,7 @@
 import { Todo, Todos } from "./types.js"
 import { getTodosLS, setTodosLS } from "./ls.js";
-import { app, db, createTodoFirestore, readTodoFirestore, readTodosFirestore, updateTodoFirestore, updateDoneFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
-import { Auth, getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from "firebase/auth";
+import { auth, createTodoFirestore, readTodoFirestore, readTodosFirestore, updateTodoFirestore, updateDoneFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from "firebase/auth";
 
 
 // Enums
@@ -182,7 +182,6 @@ async function loginDialogOkClicked(e: MouseEvent) {
     }
     e.preventDefault();
 
-    const auth: Auth = getAuth(app);
     const email: string = (loginDialogEmailInput as HTMLInputElement).value;
     const psw: string = (loginDialogPasswordInput as HTMLInputElement).value;
 

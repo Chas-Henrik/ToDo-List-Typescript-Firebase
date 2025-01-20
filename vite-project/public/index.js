@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { getTodosLS, setTodosLS } from "./ls.js";
-import { app } from "./firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./firestore.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 // Enums
 var modeEnum;
 (function (modeEnum) {
@@ -175,7 +175,6 @@ function loginDialogOkClicked(e) {
             return;
         }
         e.preventDefault();
-        const auth = getAuth(app);
         const email = loginDialogEmailInput.value;
         const psw = loginDialogPasswordInput.value;
         switch (loginDialogMode) {
