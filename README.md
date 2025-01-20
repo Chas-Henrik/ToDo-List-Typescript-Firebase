@@ -11,19 +11,14 @@ The site uses HTML5, CSS & TypeScript and the following functionality is support
 3. Update a Todo item (by clicking the todo text).
 4. Mark Todo item as done.
 5. Clearing the while Todo list.
-   
   
-The Todo items and the next available 'todo item ID' are stored in Local Storage.
-    
-The site has been published on GitHub pages:  
-Link to site:  
-[https://chas-henrik.github.io/ToDo-List-Typescript-Firebase/](https://chas-henrik.github.io/ToDo-List-Typescript-Firebase/)
 
 ***
 *Known problems:*
-1.  
+1.  The site has not been published (I don't know how to deploy firebase projects on GitHub or Netlify). 
 
 *Notes:*
 1. The whole Todo list is re-rendered when a Todo item is added, updated or deleted and this is not optimal from a performance perspective (especially when the Todo list becomes large).
+2. The Todo list is sorted each time it's rendered which could become a performance issue when the Todo list grows larger.
 
 ***
