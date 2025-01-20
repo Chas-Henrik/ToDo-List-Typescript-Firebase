@@ -1,5 +1,4 @@
 import { Todo, Todos } from "./types.js"
-import { getTodosLS, setTodosLS } from "./ls.js";
 import { auth, createTodoFirestore, readTodoFirestore, readTodosFirestore, updateTodoFirestore, updateDoneFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from "firebase/auth";
 
@@ -9,7 +8,7 @@ enum modeEnum {UNKNOWN, ADD, UPDATE};
 enum userEnum {UNKNOWN, CREATE, LOGIN};
 
 // Global Variables
-let todosObj: Todos = getTodosLS();
+let todosArr: Todo[] = [];
 let dialogTodo: (Todo|null) = null;
 let todoDialogMode = modeEnum.UNKNOWN;
 let loginDialogMode = userEnum.UNKNOWN;
@@ -69,42 +68,32 @@ function AddTodoBtnClicked(_: MouseEvent): void {
     showTodoDialog(null);
 }
 
-function clearTodoListClicked(_: MouseEvent): void {
-    todosObj = {
-        nextId: 0,
-        todos: []
-    }
-    setTodosLS(todosObj);
-    renderTodoList();
+async function clearTodoListClicked(_: MouseEvent): Promise<void> {
+    clearTodoList();
 }
 
-function todoListClicked(e: Event): void {
+async function todoListClicked(e: Event): Promise<void> {
     const element:(HTMLElement | null) = e.target as HTMLElement | null;
     if(element) {
         const parentElement:(HTMLElement | null) = element.parentElement as HTMLElement | null;
         if(parentElement) {
-            let id: number;
             let foundTodo: (Todo|null);
             switch(element.tagName.toLowerCase()) {
                 case 'button':
-                    id = parseInt(parentElement.dataset.id || '-1');
-                    if(deleteTodo(id))
-                        renderTodoList();
+                    await deleteTodo(parentElement.dataset.id);
                     break;
                 case 'p':
-                    id = parseInt(parentElement.dataset.id || '-1');
-                    foundTodo = findTodo(id);
+                    foundTodo = findTodo(parentElement.dataset.id);
                     if(foundTodo) {
                         todoDialogMode = modeEnum.UPDATE;
                         showTodoDialog(foundTodo);
                     }
                     break;
                 case 'input':
-                    id = parseInt(parentElement.dataset.id || '-1');
-                    foundTodo = findTodo(id);
+                    foundTodo = findTodo(parentElement.dataset.id);
                     if(foundTodo) {
                         foundTodo.done = (element as HTMLInputElement).checked;
-                        setTodosLS(todosObj);
+                        await updateTodoFirestore(foundTodo);
                     }
                     break;
             }
@@ -115,37 +104,55 @@ function todoListClicked(e: Event): void {
 
 // Main Window functions
 
-function findTodo(id: number): (Todo | null) {
-    const index:number = todosObj.todos.findIndex((todo) => todo.id === id);
-    if(index !== -1) {
-        return todosObj.todos[index];
+function findTodo(id: string | undefined): (Todo | null) {
+    if(id !== undefined) {
+        const index:number = todosArr.findIndex((todo) => todo.id === id);
+        if(index !== -1) {
+            return todosArr[index];
+        }
     }
     return null;
 }
 
-function addTodo(todoStr: string): void {
-    const todo: Todo = {
-        id: todosObj.nextId++,
-        text: todoStr,
-        done: false
+async function addTodo(todoStr: string): Promise<void> {
+    const todo: (Todo | null) = await createTodoFirestore();
+
+    if(todo !== null) {
+        todo.text = todoStr;
+        todo.done = false;
+        todosArr.push(todo);
+        await updateTodoFirestore(todo);
+        renderTodoList();
+    } else {
+        console.error("Failed to create todo in Firestore");
     }
-    todosObj.todos.push(todo);
-    setTodosLS(todosObj);
 }
 
-function updateTodo(id:number, todoStr: string): void {
+async function updateTodo(id:string, todoStr: string): Promise<void> {
     const foundTodo:(Todo | null) = findTodo(id);
     if(foundTodo) {
         foundTodo.text = todoStr;
-        setTodosLS(todosObj);
+        await updateTodoFirestore(foundTodo);
+        renderTodoList();
     }
 }
 
-function deleteTodo(id: number): boolean {
-    const index:number = todosObj.todos.findIndex((todo) => todo.id === id);
+async function clearTodoList(): Promise<void> {
+    try {
+        await deleteTodosFirestore(todosArr);
+        todosArr = [];
+        renderTodoList();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function deleteTodo(id: string | undefined): Promise<boolean> {
+    const index:number = todosArr.findIndex((todo) => todo.id === id);
     if(index !== -1) {
-        todosObj.todos.splice(index,1);
-        setTodosLS(todosObj);
+        await deleteTodoFirestore(todosArr[index]);
+        todosArr.splice(index,1);
+        renderTodoList();
         return true;
     }
     return false;
@@ -153,7 +160,7 @@ function deleteTodo(id: number): boolean {
 
 function renderTodoList(): void {
     if(todoUL) {
-        todoUL.innerHTML = todosObj.todos.map((todo) => {
+        todoUL.innerHTML = todosArr.map((todo) => {
             const checked:string = (todo.done) ? "checked": "";
             return `
             <li class="grid-list" data-id=${todo.id}>
@@ -193,7 +200,7 @@ async function loginDialogOkClicked(e: MouseEvent) {
                 signedInUser = userCredential.user;
             })
             .catch((error) => {
-                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                const errorStr: string = `Failed to create account!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
                 console.error(errorStr);
                 alert(errorStr);
             });
@@ -203,9 +210,19 @@ async function loginDialogOkClicked(e: MouseEvent) {
             .then((userCredential) => {
                 alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
                 signedInUser = userCredential.user;
+                readTodosFirestore()
+                .then((todos) => {
+                    todosArr = todos;
+                    renderTodoList();
+                })
+                .catch((error) => {
+                    const errorStr: string = `Failed to read from DB!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    console.error(errorStr);
+                    alert(errorStr);
+                });
             })
             .catch((error) => {
-                const errorStr: string = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                const errorStr: string = `Failed to login to server!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
                 console.error(errorStr);
                 alert(errorStr);
             });
@@ -252,7 +269,7 @@ todoDialogCancelBtn?.addEventListener('click', todoDialogCancelClicked);
 
 // Todo Dialog event listeners
 
-function todoDialogOkClicked(e: MouseEvent): void {
+async function todoDialogOkClicked(e: MouseEvent): Promise<void> {
     if(todoDialogTextArea === null || (todoDialogTextArea as HTMLTextAreaElement).value === "") {
         return;
     }
@@ -260,12 +277,10 @@ function todoDialogOkClicked(e: MouseEvent): void {
     switch(todoDialogMode) {
         case modeEnum.ADD:
             addTodo(todoDialogTextArea.value);
-            renderTodoList();
             break;
         case modeEnum.UPDATE:
             if(dialogTodo){
                 updateTodo(dialogTodo.id, todoDialogTextArea.value);
-                renderTodoList();
             }
             break;
         case modeEnum.UNKNOWN:
@@ -299,7 +314,3 @@ function closeTodoDialog(): void {
     (todoDialog as HTMLDialogElement)?.close();
 }
 
-
-// Global Initializations
-
-renderTodoList();

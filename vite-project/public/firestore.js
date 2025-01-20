@@ -30,10 +30,10 @@ export const db = getFirestore(app);
 export function createTodoFirestore() {
     return __awaiter(this, void 0, void 0, function* () {
         // Add a new document with a generated id.
-        const todo = { id: -1, text: '', done: false };
+        const todo = { id: '', text: '', done: false };
         try {
             const docRef = yield addDoc(collection(db, "todos"), todo);
-            todo.id = parseInt(docRef.id);
+            todo.id = docRef.id;
             return todo;
         }
         catch (error) {
@@ -46,7 +46,7 @@ export function readTodoFirestore(id) {
     return __awaiter(this, void 0, void 0, function* () {
         // Get a todo from your database
         try {
-            const docRef = doc(db, "todos", `${id}`);
+            const docRef = doc(db, "todos", id);
             const docSnap = yield getDoc(docRef);
             if (docSnap.exists()) {
                 return docSnap.data();
@@ -67,7 +67,12 @@ export function readTodosFirestore() {
         try {
             const todosQuery = query(collection(db, 'todos'));
             const querySnapshot = yield getDocs(todosQuery);
-            return querySnapshot.docs.map(doc => doc.data());
+            if (!querySnapshot.empty) {
+                return querySnapshot.docs.map(doc => doc.data());
+            }
+            else {
+                return [];
+            }
         }
         catch (error) {
             console.error("Error", error);
@@ -79,7 +84,7 @@ export function updateTodoFirestore(todo) {
     return __awaiter(this, void 0, void 0, function* () {
         // Add or update a document in collection "todos"
         try {
-            yield setDoc(doc(db, 'todos', `${todo.id}`), todo);
+            yield setDoc(doc(db, 'todos', todo.id), todo);
         }
         catch (error) {
             console.error("Error", error);
@@ -90,7 +95,7 @@ export function updateDoneFirestore(todo) {
     return __awaiter(this, void 0, void 0, function* () {
         // Add or update a document in collection "todos"
         try {
-            const todoRef = doc(db, 'todos', `${todo.id}`);
+            const todoRef = doc(db, 'todos', todo.id);
             yield updateDoc(todoRef, { Done: todo.done });
         }
         catch (error) {
@@ -102,7 +107,7 @@ export function deleteTodoFirestore(todo) {
     return __awaiter(this, void 0, void 0, function* () {
         // Delete a todo in your database
         try {
-            yield deleteDoc(doc(db, "todos", `${todo.id}`));
+            yield deleteDoc(doc(db, "todos", todo.id));
         }
         catch (error) {
             console.error("Error", error);

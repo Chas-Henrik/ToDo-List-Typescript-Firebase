@@ -7,8 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { getTodosLS, setTodosLS } from "./ls.js";
-import { auth } from "./firestore.js";
+import { auth, createTodoFirestore, readTodosFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 // Enums
 var modeEnum;
@@ -26,7 +25,7 @@ var userEnum;
 })(userEnum || (userEnum = {}));
 ;
 // Global Variables
-let todosObj = getTodosLS();
+let todosArr = [];
 let dialogTodo = null;
 let todoDialogMode = modeEnum.UNKNOWN;
 let loginDialogMode = userEnum.UNKNOWN;
@@ -77,82 +76,102 @@ function AddTodoBtnClicked(_) {
     showTodoDialog(null);
 }
 function clearTodoListClicked(_) {
-    todosObj = {
-        nextId: 0,
-        todos: []
-    };
-    setTodosLS(todosObj);
-    renderTodoList();
+    return __awaiter(this, void 0, void 0, function* () {
+        clearTodoList();
+    });
 }
 function todoListClicked(e) {
-    const element = e.target;
-    if (element) {
-        const parentElement = element.parentElement;
-        if (parentElement) {
-            let id;
-            let foundTodo;
-            switch (element.tagName.toLowerCase()) {
-                case 'button':
-                    id = parseInt(parentElement.dataset.id || '-1');
-                    if (deleteTodo(id))
-                        renderTodoList();
-                    break;
-                case 'p':
-                    id = parseInt(parentElement.dataset.id || '-1');
-                    foundTodo = findTodo(id);
-                    if (foundTodo) {
-                        todoDialogMode = modeEnum.UPDATE;
-                        showTodoDialog(foundTodo);
-                    }
-                    break;
-                case 'input':
-                    id = parseInt(parentElement.dataset.id || '-1');
-                    foundTodo = findTodo(id);
-                    if (foundTodo) {
-                        foundTodo.done = element.checked;
-                        setTodosLS(todosObj);
-                    }
-                    break;
+    return __awaiter(this, void 0, void 0, function* () {
+        const element = e.target;
+        if (element) {
+            const parentElement = element.parentElement;
+            if (parentElement) {
+                let foundTodo;
+                switch (element.tagName.toLowerCase()) {
+                    case 'button':
+                        yield deleteTodo(parentElement.dataset.id);
+                        break;
+                    case 'p':
+                        foundTodo = findTodo(parentElement.dataset.id);
+                        if (foundTodo) {
+                            todoDialogMode = modeEnum.UPDATE;
+                            showTodoDialog(foundTodo);
+                        }
+                        break;
+                    case 'input':
+                        foundTodo = findTodo(parentElement.dataset.id);
+                        if (foundTodo) {
+                            foundTodo.done = element.checked;
+                            yield updateTodoFirestore(foundTodo);
+                        }
+                        break;
+                }
             }
         }
-    }
+    });
 }
 // Main Window functions
 function findTodo(id) {
-    const index = todosObj.todos.findIndex((todo) => todo.id === id);
-    if (index !== -1) {
-        return todosObj.todos[index];
+    if (id !== undefined) {
+        const index = todosArr.findIndex((todo) => todo.id === id);
+        if (index !== -1) {
+            return todosArr[index];
+        }
     }
     return null;
 }
 function addTodo(todoStr) {
-    const todo = {
-        id: todosObj.nextId++,
-        text: todoStr,
-        done: false
-    };
-    todosObj.todos.push(todo);
-    setTodosLS(todosObj);
+    return __awaiter(this, void 0, void 0, function* () {
+        const todo = yield createTodoFirestore();
+        if (todo !== null) {
+            todo.text = todoStr;
+            todo.done = false;
+            todosArr.push(todo);
+            yield updateTodoFirestore(todo);
+            renderTodoList();
+        }
+        else {
+            console.error("Failed to create todo in Firestore");
+        }
+    });
 }
 function updateTodo(id, todoStr) {
-    const foundTodo = findTodo(id);
-    if (foundTodo) {
-        foundTodo.text = todoStr;
-        setTodosLS(todosObj);
-    }
+    return __awaiter(this, void 0, void 0, function* () {
+        const foundTodo = findTodo(id);
+        if (foundTodo) {
+            foundTodo.text = todoStr;
+            yield updateTodoFirestore(foundTodo);
+            renderTodoList();
+        }
+    });
+}
+function clearTodoList() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield deleteTodosFirestore(todosArr);
+            todosArr = [];
+            renderTodoList();
+        }
+        catch (error) {
+            console.error(error);
+        }
+    });
 }
 function deleteTodo(id) {
-    const index = todosObj.todos.findIndex((todo) => todo.id === id);
-    if (index !== -1) {
-        todosObj.todos.splice(index, 1);
-        setTodosLS(todosObj);
-        return true;
-    }
-    return false;
+    return __awaiter(this, void 0, void 0, function* () {
+        const index = todosArr.findIndex((todo) => todo.id === id);
+        if (index !== -1) {
+            yield deleteTodoFirestore(todosArr[index]);
+            todosArr.splice(index, 1);
+            renderTodoList();
+            return true;
+        }
+        return false;
+    });
 }
 function renderTodoList() {
     if (todoUL) {
-        todoUL.innerHTML = todosObj.todos.map((todo) => {
+        todoUL.innerHTML = todosArr.map((todo) => {
             const checked = (todo.done) ? "checked" : "";
             return `
             <li class="grid-list" data-id=${todo.id}>
@@ -185,7 +204,7 @@ function loginDialogOkClicked(e) {
                     signedInUser = userCredential.user;
                 })
                     .catch((error) => {
-                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    const errorStr = `Failed to create account!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
                     console.error(errorStr);
                     alert(errorStr);
                 });
@@ -195,9 +214,19 @@ function loginDialogOkClicked(e) {
                     .then((userCredential) => {
                     alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
                     signedInUser = userCredential.user;
+                    readTodosFirestore()
+                        .then((todos) => {
+                        todosArr = todos;
+                        renderTodoList();
+                    })
+                        .catch((error) => {
+                        const errorStr = `Failed to read from DB!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                        console.error(errorStr);
+                        alert(errorStr);
+                    });
                 })
                     .catch((error) => {
-                    const errorStr = `An error occurred!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    const errorStr = `Failed to login to server!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
                     console.error(errorStr);
                     alert(errorStr);
                 });
@@ -231,26 +260,26 @@ todoDialogOkBtn === null || todoDialogOkBtn === void 0 ? void 0 : todoDialogOkBt
 todoDialogCancelBtn === null || todoDialogCancelBtn === void 0 ? void 0 : todoDialogCancelBtn.addEventListener('click', todoDialogCancelClicked);
 // Todo Dialog event listeners
 function todoDialogOkClicked(e) {
-    if (todoDialogTextArea === null || todoDialogTextArea.value === "") {
-        return;
-    }
-    switch (todoDialogMode) {
-        case modeEnum.ADD:
-            addTodo(todoDialogTextArea.value);
-            renderTodoList();
-            break;
-        case modeEnum.UPDATE:
-            if (dialogTodo) {
-                updateTodo(dialogTodo.id, todoDialogTextArea.value);
-                renderTodoList();
-            }
-            break;
-        case modeEnum.UNKNOWN:
-            console.error("todoDialogOkClicked - Error: todoDialogMode is modeEnum.UNKNOWN");
-            break;
-    }
-    e.preventDefault();
-    closeTodoDialog();
+    return __awaiter(this, void 0, void 0, function* () {
+        if (todoDialogTextArea === null || todoDialogTextArea.value === "") {
+            return;
+        }
+        switch (todoDialogMode) {
+            case modeEnum.ADD:
+                addTodo(todoDialogTextArea.value);
+                break;
+            case modeEnum.UPDATE:
+                if (dialogTodo) {
+                    updateTodo(dialogTodo.id, todoDialogTextArea.value);
+                }
+                break;
+            case modeEnum.UNKNOWN:
+                console.error("todoDialogOkClicked - Error: todoDialogMode is modeEnum.UNKNOWN");
+                break;
+        }
+        e.preventDefault();
+        closeTodoDialog();
+    });
 }
 function todoDialogCancelClicked(_) {
     closeTodoDialog();
@@ -268,5 +297,3 @@ function closeTodoDialog() {
         todoDialogTextArea.value = "";
     todoDialog === null || todoDialog === void 0 ? void 0 : todoDialog.close();
 }
-// Global Initializations
-renderTodoList();
