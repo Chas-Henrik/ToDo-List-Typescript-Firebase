@@ -13,6 +13,7 @@ let dialogTodo: (Todo|null) = null;
 let todoDialogMode = modeEnum.UNKNOWN;
 let loginDialogMode = userEnum.UNKNOWN;
 let signedInUser: User;
+let uid: string = '';
 
 // Main Window elements
 const createUserImg:(HTMLElement | null) = document.getElementById("create-user-icon");
@@ -93,7 +94,7 @@ async function todoListClicked(e: Event): Promise<void> {
                     foundTodo = findTodo(parentElement.dataset.id);
                     if(foundTodo) {
                         foundTodo.done = (element as HTMLInputElement).checked;
-                        await updateTodoFirestore(foundTodo);
+                        await updateTodoFirestore(uid, foundTodo);
                     }
                     break;
             }
@@ -115,13 +116,13 @@ function findTodo(id: string | undefined): (Todo | null) {
 }
 
 async function addTodo(todoStr: string): Promise<void> {
-    const todo: (Todo | null) = await createTodoFirestore();
+    const todo: (Todo | null) = await createTodoFirestore(uid);
 
     if(todo !== null) {
         todo.text = todoStr;
         todo.done = false;
         todosArr.push(todo);
-        await updateTodoFirestore(todo);
+        await updateTodoFirestore(uid, todo);
         renderTodoList();
     } else {
         console.error("Failed to create todo in Firestore");
@@ -132,14 +133,14 @@ async function updateTodo(id:string, todoStr: string): Promise<void> {
     const foundTodo:(Todo | null) = findTodo(id);
     if(foundTodo) {
         foundTodo.text = todoStr;
-        await updateTodoFirestore(foundTodo);
+        await updateTodoFirestore(uid, foundTodo);
         renderTodoList();
     }
 }
 
 async function clearTodoList(): Promise<void> {
     try {
-        await deleteTodosFirestore(todosArr);
+        await deleteTodosFirestore(uid, todosArr);
         todosArr = [];
         renderTodoList();
     } catch (error) {
@@ -150,7 +151,7 @@ async function clearTodoList(): Promise<void> {
 async function deleteTodo(id: string | undefined): Promise<boolean> {
     const index:number = todosArr.findIndex((todo) => todo.id === id);
     if(index !== -1) {
-        await deleteTodoFirestore(todosArr[index]);
+        await deleteTodoFirestore(uid, todosArr[index]);
         todosArr.splice(index,1);
         renderTodoList();
         return true;
@@ -195,37 +196,39 @@ async function loginDialogOkClicked(e: MouseEvent) {
     switch (loginDialogMode) {
         case userEnum.CREATE:
             createUserWithEmailAndPassword(auth, email, psw)
-            .then((userCredential) => {
-                alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
-                signedInUser = userCredential.user;
-            })
-            .catch((error) => {
-                const errorStr: string = `Failed to create account!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
-                console.error(errorStr);
-                alert(errorStr);
-            });
-            break;
-        case userEnum.LOGIN:
-            signInWithEmailAndPassword(auth, email, psw)
-            .then((userCredential) => {
-                alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
-                signedInUser = userCredential.user;
-                readTodosFirestore()
-                .then((todos) => {
-                    todosArr = todos;
-                    renderTodoList();
+                .then((userCredential) => {
+                    alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                    signedInUser = userCredential.user;
+                    uid = signedInUser.uid;
                 })
                 .catch((error) => {
-                    const errorStr: string = `Failed to read from DB!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    const errorStr: string = `Failed to create account!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
                     console.error(errorStr);
                     alert(errorStr);
                 });
-            })
-            .catch((error) => {
-                const errorStr: string = `Failed to login to server!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
-                console.error(errorStr);
-                alert(errorStr);
-            });
+            break;
+        case userEnum.LOGIN:
+            signInWithEmailAndPassword(auth, email, psw)
+                .then((userCredential) => {
+                    alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                    signedInUser = userCredential.user;
+                    uid = signedInUser.uid;
+                    readTodosFirestore(uid)
+                        .then((todos: Todo[]) => {
+                            todosArr = todos.sort( (a:Todo, b:Todo) => sortAscending(a.text.toLowerCase(), b.text.toLowerCase()) );
+                            renderTodoList();
+                        })
+                        .catch((error) => {
+                                const errorStr: string = `Failed to read from DB!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                                console.error(errorStr);
+                                alert(errorStr);
+                        });
+                })
+                .catch((error) => {
+                    const errorStr: string = `Failed to login to server!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+                    console.error(errorStr);
+                    alert(errorStr);
+                });
             break;
         default:
             const errorStr: string = `Invalid loginDialogMode (${loginDialogMode})`
@@ -242,6 +245,16 @@ function loginDialogCancelClicked(_: MouseEvent): void {
 }
 
 // Login Dialog functions
+
+function sortAscending(a: string, b: string): number {
+    if(a === b) {
+        return 0;
+    } else if(a < b) {
+        return -1;
+    } else {
+        return 1;
+    }
+}
 
 function showLoginDialog(): void {
     (loginDialog as HTMLDialogElement)?.showModal();

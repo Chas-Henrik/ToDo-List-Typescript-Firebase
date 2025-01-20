@@ -30,6 +30,7 @@ let dialogTodo = null;
 let todoDialogMode = modeEnum.UNKNOWN;
 let loginDialogMode = userEnum.UNKNOWN;
 let signedInUser;
+let uid = '';
 // Main Window elements
 const createUserImg = document.getElementById("create-user-icon");
 const loginUserImg = document.getElementById("login-user-icon");
@@ -102,7 +103,7 @@ function todoListClicked(e) {
                         foundTodo = findTodo(parentElement.dataset.id);
                         if (foundTodo) {
                             foundTodo.done = element.checked;
-                            yield updateTodoFirestore(foundTodo);
+                            yield updateTodoFirestore(uid, foundTodo);
                         }
                         break;
                 }
@@ -122,12 +123,12 @@ function findTodo(id) {
 }
 function addTodo(todoStr) {
     return __awaiter(this, void 0, void 0, function* () {
-        const todo = yield createTodoFirestore();
+        const todo = yield createTodoFirestore(uid);
         if (todo !== null) {
             todo.text = todoStr;
             todo.done = false;
             todosArr.push(todo);
-            yield updateTodoFirestore(todo);
+            yield updateTodoFirestore(uid, todo);
             renderTodoList();
         }
         else {
@@ -140,7 +141,7 @@ function updateTodo(id, todoStr) {
         const foundTodo = findTodo(id);
         if (foundTodo) {
             foundTodo.text = todoStr;
-            yield updateTodoFirestore(foundTodo);
+            yield updateTodoFirestore(uid, foundTodo);
             renderTodoList();
         }
     });
@@ -148,7 +149,7 @@ function updateTodo(id, todoStr) {
 function clearTodoList() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield deleteTodosFirestore(todosArr);
+            yield deleteTodosFirestore(uid, todosArr);
             todosArr = [];
             renderTodoList();
         }
@@ -161,7 +162,7 @@ function deleteTodo(id) {
     return __awaiter(this, void 0, void 0, function* () {
         const index = todosArr.findIndex((todo) => todo.id === id);
         if (index !== -1) {
-            yield deleteTodoFirestore(todosArr[index]);
+            yield deleteTodoFirestore(uid, todosArr[index]);
             todosArr.splice(index, 1);
             renderTodoList();
             return true;
@@ -202,6 +203,7 @@ function loginDialogOkClicked(e) {
                     .then((userCredential) => {
                     alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
                     signedInUser = userCredential.user;
+                    uid = signedInUser.uid;
                 })
                     .catch((error) => {
                     const errorStr = `Failed to create account!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
@@ -214,9 +216,10 @@ function loginDialogOkClicked(e) {
                     .then((userCredential) => {
                     alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
                     signedInUser = userCredential.user;
-                    readTodosFirestore()
+                    uid = signedInUser.uid;
+                    readTodosFirestore(uid)
                         .then((todos) => {
-                        todosArr = todos;
+                        todosArr = todos.sort((a, b) => sortAscending(a.text.toLowerCase(), b.text.toLowerCase()));
                         renderTodoList();
                     })
                         .catch((error) => {
@@ -244,6 +247,17 @@ function loginDialogCancelClicked(_) {
     closeLoginDialog();
 }
 // Login Dialog functions
+function sortAscending(a, b) {
+    if (a === b) {
+        return 0;
+    }
+    else if (a < b) {
+        return -1;
+    }
+    else {
+        return 1;
+    }
+}
 function showLoginDialog() {
     loginDialog === null || loginDialog === void 0 ? void 0 : loginDialog.showModal();
 }
