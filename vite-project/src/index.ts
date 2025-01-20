@@ -161,7 +161,9 @@ async function deleteTodo(id: string | undefined): Promise<boolean> {
 
 function renderTodoList(): void {
     if(todoUL) {
-        todoUL.innerHTML = todosArr.map((todo) => {
+        todoUL.innerHTML = todosArr.
+        sort((a:Todo, b:Todo) => sortAscending(a.text.toLowerCase(), b.text.toLowerCase())).
+        map((todo) => {
             const checked:string = (todo.done) ? "checked": "";
             return `
             <li class="grid-list" data-id=${todo.id}>
@@ -215,7 +217,7 @@ async function loginDialogOkClicked(e: MouseEvent) {
                     uid = signedInUser.uid;
                     readTodosFirestore(uid)
                         .then((todos: Todo[]) => {
-                            todosArr = todos.sort( (a:Todo, b:Todo) => sortAscending(a.text.toLowerCase(), b.text.toLowerCase()) );
+                            todosArr = todos;
                             renderTodoList();
                         })
                         .catch((error) => {

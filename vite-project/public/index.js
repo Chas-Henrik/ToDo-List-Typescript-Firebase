@@ -172,7 +172,9 @@ function deleteTodo(id) {
 }
 function renderTodoList() {
     if (todoUL) {
-        todoUL.innerHTML = todosArr.map((todo) => {
+        todoUL.innerHTML = todosArr.
+            sort((a, b) => sortAscending(a.text.toLowerCase(), b.text.toLowerCase())).
+            map((todo) => {
             const checked = (todo.done) ? "checked" : "";
             return `
             <li class="grid-list" data-id=${todo.id}>
@@ -219,7 +221,7 @@ function loginDialogOkClicked(e) {
                     uid = signedInUser.uid;
                     readTodosFirestore(uid)
                         .then((todos) => {
-                        todosArr = todos.sort((a, b) => sortAscending(a.text.toLowerCase(), b.text.toLowerCase()));
+                        todosArr = todos;
                         renderTodoList();
                     })
                         .catch((error) => {
