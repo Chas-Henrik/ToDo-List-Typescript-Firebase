@@ -1,3 +1,3 @@
 export default {
-    base: '/vite-project/'
+    base: '/ToDo-List-Typescript-Firebase/'
 }
