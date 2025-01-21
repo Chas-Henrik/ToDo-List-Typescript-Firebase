@@ -39,7 +39,7 @@ jobs:
       - name: Check current working folder
         run: pwd && ls -al
       - name: Change working folder
-        run: cd vite-project
+        run: cd vite-project && cat package.json
       - name: Install dependencies
         run: npm ci && npm install
       - name: Build
