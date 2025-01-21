@@ -94,7 +94,8 @@ export function deleteTodoFirestore(uid, todo) {
     return __awaiter(this, void 0, void 0, function* () {
         // Delete a todo in your database
         try {
-            yield deleteDoc(doc(db, 'users', uid, 'todos', todo.id));
+            const docRef = doc(db, 'users', uid, 'todos', todo.id);
+            yield deleteDoc(docRef);
         }
         catch (error) {
             console.error("Error", error);

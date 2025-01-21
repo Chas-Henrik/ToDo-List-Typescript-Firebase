@@ -1,6 +1,6 @@
 import { Todos, Todo } from "./types.js"
 import { FirebaseApp, initializeApp } from '../node_modules/firebase/app';
-import { Firestore, getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query } from "../node_modules/firebase/firestore/lite";
+import { Firestore, getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, DocumentReference, DocumentData, DocumentSnapshot, Query, QuerySnapshot } from "../node_modules/firebase/firestore/lite";
 import { Auth, getAuth } from "../node_modules/firebase/auth";
 
 // Firebase project configuration
@@ -27,7 +27,7 @@ export async function createTodoFirestore(uid: string): Promise<Todo|null> {
     // Add a new document with a generated id.
     const todo:Todo = {id:'', text:'', done:false};
     try {
-        const docRef = await addDoc(collection(db, 'users', uid, 'todos'), todo);
+        const docRef: DocumentReference<DocumentData,DocumentData> = await addDoc(collection(db, 'users', uid, 'todos'), todo);
         todo.id = docRef.id;
         return todo;
     } catch (error) {
@@ -39,8 +39,8 @@ export async function createTodoFirestore(uid: string): Promise<Todo|null> {
 export async function readTodoFirestore(uid: string, id:string): Promise<Todo|null> {
     // Get a todo from your database
     try {
-        const docRef = doc(db, 'users', uid, 'todos', id);
-        const docSnap = await getDoc(docRef);
+        const docRef: DocumentReference<DocumentData,DocumentData> = doc(db, 'users', uid, 'todos', id);
+        const docSnap: DocumentSnapshot<DocumentData,DocumentData> = await getDoc(docRef);
         if(docSnap.exists()){
             return docSnap.data() as Todo;
         } else {
@@ -55,8 +55,8 @@ export async function readTodoFirestore(uid: string, id:string): Promise<Todo|nu
 export async function readTodosFirestore(uid: string): Promise<Todo[]> {
     // Get a list of todos from your database
     try {
-        const todosQuery = query(collection(db, 'users', uid, 'todos'));
-        const querySnapshot = await getDocs(todosQuery);
+        const todosQuery: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'));
+        const querySnapshot: QuerySnapshot<DocumentData, DocumentData> = await getDocs(todosQuery);
         if(!querySnapshot.empty) {
             return querySnapshot.docs.map(doc => doc.data() as Todo);
         } else {
@@ -71,7 +71,7 @@ export async function readTodosFirestore(uid: string): Promise<Todo[]> {
 export async function updateTodoFirestore(uid: string, todo:Todo): Promise<void> {
     // Add or update a document in collection "todos"
     try {
-        const todoRef = doc(db, 'users', uid, 'todos', todo.id);
+        const todoRef: DocumentReference<DocumentData,DocumentData> = doc(db, 'users', uid, 'todos', todo.id);
         await setDoc(todoRef, todo);
     } catch (error) {
         console.error("Error", error);
@@ -81,7 +81,8 @@ export async function updateTodoFirestore(uid: string, todo:Todo): Promise<void>
 export async function deleteTodoFirestore(uid: string, todo:Todo): Promise<void> {
     // Delete a todo in your database
     try {
-        await deleteDoc(doc(db, 'users', uid, 'todos', todo.id));
+        const docRef: DocumentReference<DocumentData,DocumentData> = doc(db, 'users', uid, 'todos', todo.id);
+        await deleteDoc(docRef);
     } catch (error) {
         console.error("Error", error);
     }
