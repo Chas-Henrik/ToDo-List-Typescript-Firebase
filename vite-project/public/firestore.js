@@ -10,9 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query } from "firebase/firestore/lite";
 import { getAuth } from "firebase/auth";
-// Follow this pattern to import other Firebase services
-// import { } from 'firebase/<service>';
-// TODO: Replace the following with your app's Firebase project configuration
+// Firebase project configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDkLzs8sAZ1dlk2-kRa2KMcb01wwqBVfrk",
     authDomain: "todo-list-64101.firebaseapp.com",

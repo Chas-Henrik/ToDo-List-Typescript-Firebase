@@ -14,10 +14,11 @@ The site uses HTML5, CSS & TypeScript and the following functionality is support
   
 ***
 *Known problems:*
-1.  The site has not been published (I don't know how to deploy firebase projects on GitHub or Netlify and did not have enough time to investigate this). 
+1. The site has not been published (I don't know how to deploy firebase projects on GitHub or Netlify and did not have enough time to investigate this).
+2. The source code contains a unprotected plain text key (`apiKey`) which compromises security.
   
 *Notes:*
-1. The whole Todo list is re-rendered when a Todo item is added, updated or deleted and this is not optimal from a performance perspective (especially when the Todo list becomes large).
-2. The Todo list is sorted each time it's rendered which could become a performance issue when the Todo list grows larger.
+1. The whole Todo list is re-rendered when a Todo item is added, updated or deleted and this is not optimal from a performance perspective (especially if the Todo list becomes large).
+2. The Todo list is sorted each time it's rendered which could also become a performance issue if the Todo list grows larger.
   
 ***
