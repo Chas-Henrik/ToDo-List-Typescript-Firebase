@@ -203,7 +203,7 @@ function loginDialogOkClicked(e) {
             case userEnum.CREATE:
                 createUserWithEmailAndPassword(auth, email, psw)
                     .then((userCredential) => {
-                    alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                    alert(`User '${userCredential.user.email}' created!`);
                     signedInUser = userCredential.user;
                     uid = signedInUser.uid;
                 })
@@ -216,9 +216,11 @@ function loginDialogOkClicked(e) {
             case userEnum.LOGIN:
                 signInWithEmailAndPassword(auth, email, psw)
                     .then((userCredential) => {
-                    alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                    alert(`User '${userCredential.user.email}' logged in!`);
                     signedInUser = userCredential.user;
                     uid = signedInUser.uid;
+                    addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.removeAttribute("disabled");
+                    clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.removeAttribute("disabled");
                     readTodosFirestore(uid)
                         .then((todos) => {
                         todosArr = todos;

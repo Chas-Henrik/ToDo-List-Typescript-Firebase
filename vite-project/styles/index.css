@@ -18,6 +18,10 @@
     font-size: 62.5%;
 }
 
+.collapsed {
+    display: none !important;
+}
+
 .text-align-left {
     text-align: left;
 }

@@ -199,7 +199,7 @@ async function loginDialogOkClicked(e: MouseEvent) {
         case userEnum.CREATE:
             createUserWithEmailAndPassword(auth, email, psw)
                 .then((userCredential) => {
-                    alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                    alert(`User '${userCredential.user.email}' created!`);
                     signedInUser = userCredential.user;
                     uid = signedInUser.uid;
                 })
@@ -212,9 +212,11 @@ async function loginDialogOkClicked(e: MouseEvent) {
         case userEnum.LOGIN:
             signInWithEmailAndPassword(auth, email, psw)
                 .then((userCredential) => {
-                    alert(`User '${userCredential.user.email}' ${userCredential.operationType}!`);
+                    alert(`User '${userCredential.user.email}' logged in!`);
                     signedInUser = userCredential.user;
                     uid = signedInUser.uid;
+                    addTodoBtn?.removeAttribute("disabled");
+                    clearTodoListBtn?.removeAttribute("disabled");
                     readTodosFirestore(uid)
                         .then((todos: Todo[]) => {
                             todosArr = todos;
