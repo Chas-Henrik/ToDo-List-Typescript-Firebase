@@ -12,13 +12,17 @@ The site uses HTML5, CSS & TypeScript and the following functionality is support
 5. Clearing the while Todo list.
 6. Simple authentication with E-mail & password.
   
+The site has been published on GitHub pages:  
+Link to site:  
+[https://chas-henrik.github.io/ToDo-List-Typescript-Firebase/](https://chas-henrik.github.io/ToDo-List-Typescript-Firebase/)
+  
+
 ***
 *Known problems:*
-1. The site has not been published (I don't know how to deploy Vite-Firebase projects on GitHub or Netlify).
-2. The source code contains a unprotected plain text key (`apiKey`) which compromises security. Fortunately the security breach is minor, see [https://infosecwriteups.com/is-it-safe-to-expose-your-firebase-api-key-bf2a318c0f29](https://infosecwriteups.com/is-it-safe-to-expose-your-firebase-api-key-bf2a318c0f29) for more information.
+1. The source code contains a unprotected plain text key (`apiKey`) which compromises security. Fortunately the security breach is minor, see [https://infosecwriteups.com/is-it-safe-to-expose-your-firebase-api-key-bf2a318c0f29](https://infosecwriteups.com/is-it-safe-to-expose-your-firebase-api-key-bf2a318c0f29) for more information.
   
 *Notes:*
 1. The whole Todo list is re-rendered when a Todo item is added, updated or deleted and this is not optimal from a performance perspective (especially if the Todo list becomes large).
-2. The Todo list is sorted each time it's rendered which could also become a performance issue if the Todo list grows larger.
+2. The Todo list is sorted each time it's rendered which can also become a performance issue if the Todo list grows larger.
   
 ***
