@@ -37,7 +37,7 @@ jobs:
           node-version: 20
           cache: 'npm'
       - name: Check current working folder
-        run: cwd
+        run: pwd
       - name: Install dependencies
         run: npm ci && npm install
       - name: Build
