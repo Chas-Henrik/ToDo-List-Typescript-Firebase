@@ -3,14 +3,14 @@ import { auth, createTodoFirestore, readTodosFirestore, updateTodoFirestore, del
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from "../node_modules/firebase/auth";
 
 // Enums
-enum modeEnum {UNKNOWN, ADD, UPDATE};
-enum userEnum {UNKNOWN, CREATE, LOGIN, LOGOUT};
+enum todoEnum {UNKNOWN, ADD, UPDATE};
+enum userEnum {LOGOUT, CREATE, LOGIN};
 
 // Global Variables
 let todosArr: Todo[] = [];
 let dialogTodo: (Todo|null) = null;
-let todoDialogMode = modeEnum.UNKNOWN;
-let loginDialogMode = userEnum.UNKNOWN;
+let todoDialogMode = todoEnum.UNKNOWN;
+let loginDialogMode = userEnum.LOGOUT;
 let signedInUser: (User|null) = null;
 let uid: string = '';
 
@@ -90,7 +90,7 @@ function logoutUserSvgClicked(_: MouseEvent): void {
 }
 
 function AddTodoBtnClicked(_: MouseEvent): void {
-    todoDialogMode = modeEnum.ADD;
+    todoDialogMode = todoEnum.ADD;
     showTodoDialog(null);
 }
 
@@ -111,7 +111,7 @@ async function todoListClicked(e: Event): Promise<void> {
                 case 'p':
                     foundTodo = findTodo(parentElement.dataset.id);
                     if(foundTodo) {
-                        todoDialogMode = modeEnum.UPDATE;
+                        todoDialogMode = todoEnum.UPDATE;
                         showTodoDialog(foundTodo);
                     }
                     break;
@@ -343,16 +343,16 @@ async function todoDialogOkClicked(e: MouseEvent): Promise<void> {
     }
 
     switch(todoDialogMode) {
-        case modeEnum.ADD:
+        case todoEnum.ADD:
             addTodo(todoDialogTextArea.value);
             break;
-        case modeEnum.UPDATE:
+        case todoEnum.UPDATE:
             if(dialogTodo){
                 updateTodo(dialogTodo.id, todoDialogTextArea.value);
             }
             break;
-        case modeEnum.UNKNOWN:
-            console.error("todoDialogOkClicked - Error: todoDialogMode is modeEnum.UNKNOWN")
+        case todoEnum.UNKNOWN:
+            console.error("todoDialogOkClicked - Error: todoDialogMode is todoEnum.UNKNOWN")
             break;
     }
 

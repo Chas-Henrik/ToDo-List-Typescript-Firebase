@@ -10,26 +10,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { auth, createTodoFirestore, readTodosFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "../node_modules/firebase/auth";
 // Enums
-var modeEnum;
-(function (modeEnum) {
-    modeEnum[modeEnum["UNKNOWN"] = 0] = "UNKNOWN";
-    modeEnum[modeEnum["ADD"] = 1] = "ADD";
-    modeEnum[modeEnum["UPDATE"] = 2] = "UPDATE";
-})(modeEnum || (modeEnum = {}));
+var todoEnum;
+(function (todoEnum) {
+    todoEnum[todoEnum["UNKNOWN"] = 0] = "UNKNOWN";
+    todoEnum[todoEnum["ADD"] = 1] = "ADD";
+    todoEnum[todoEnum["UPDATE"] = 2] = "UPDATE";
+})(todoEnum || (todoEnum = {}));
 ;
 var userEnum;
 (function (userEnum) {
-    userEnum[userEnum["UNKNOWN"] = 0] = "UNKNOWN";
+    userEnum[userEnum["LOGOUT"] = 0] = "LOGOUT";
     userEnum[userEnum["CREATE"] = 1] = "CREATE";
     userEnum[userEnum["LOGIN"] = 2] = "LOGIN";
-    userEnum[userEnum["LOGOUT"] = 3] = "LOGOUT";
 })(userEnum || (userEnum = {}));
 ;
 // Global Variables
 let todosArr = [];
 let dialogTodo = null;
-let todoDialogMode = modeEnum.UNKNOWN;
-let loginDialogMode = userEnum.UNKNOWN;
+let todoDialogMode = todoEnum.UNKNOWN;
+let loginDialogMode = userEnum.LOGOUT;
 let signedInUser = null;
 let uid = '';
 // Main Window elements
@@ -98,7 +97,7 @@ function logoutUserSvgClicked(_) {
     }
 }
 function AddTodoBtnClicked(_) {
-    todoDialogMode = modeEnum.ADD;
+    todoDialogMode = todoEnum.ADD;
     showTodoDialog(null);
 }
 function clearTodoListClicked(_) {
@@ -120,7 +119,7 @@ function todoListClicked(e) {
                     case 'p':
                         foundTodo = findTodo(parentElement.dataset.id);
                         if (foundTodo) {
-                            todoDialogMode = modeEnum.UPDATE;
+                            todoDialogMode = todoEnum.UPDATE;
                             showTodoDialog(foundTodo);
                         }
                         break;
@@ -333,16 +332,16 @@ function todoDialogOkClicked(e) {
             return;
         }
         switch (todoDialogMode) {
-            case modeEnum.ADD:
+            case todoEnum.ADD:
                 addTodo(todoDialogTextArea.value);
                 break;
-            case modeEnum.UPDATE:
+            case todoEnum.UPDATE:
                 if (dialogTodo) {
                     updateTodo(dialogTodo.id, todoDialogTextArea.value);
                 }
                 break;
-            case modeEnum.UNKNOWN:
-                console.error("todoDialogOkClicked - Error: todoDialogMode is modeEnum.UNKNOWN");
+            case todoEnum.UNKNOWN:
+                console.error("todoDialogOkClicked - Error: todoDialogMode is todoEnum.UNKNOWN");
                 break;
         }
         e.preventDefault();
