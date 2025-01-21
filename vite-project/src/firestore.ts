@@ -71,17 +71,8 @@ export async function readTodosFirestore(uid: string): Promise<Todo[]> {
 export async function updateTodoFirestore(uid: string, todo:Todo): Promise<void> {
     // Add or update a document in collection "todos"
     try {
-        await setDoc(doc(db, 'users', uid, 'todos', todo.id), todo);
-    } catch (error) {
-        console.error("Error", error);
-    }
-}
-
-export async function updateDoneFirestore(uid: string, todo:Todo): Promise<void> {
-    // Add or update a document in collection "todos"
-    try {
         const todoRef = doc(db, 'users', uid, 'todos', todo.id);
-        await updateDoc(todoRef, {Done: todo.done});
+        await setDoc(todoRef, todo);
     } catch (error) {
         console.error("Error", error);
     }

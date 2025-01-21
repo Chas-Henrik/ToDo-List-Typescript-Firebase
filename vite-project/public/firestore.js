@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { initializeApp } from '../node_modules/firebase/app';
-import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query } from "../node_modules/firebase/firestore/lite";
+import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, deleteDoc, query } from "../node_modules/firebase/firestore/lite";
 import { getAuth } from "../node_modules/firebase/auth";
 // Firebase project configuration
 const firebaseConfig = {
@@ -82,19 +82,8 @@ export function updateTodoFirestore(uid, todo) {
     return __awaiter(this, void 0, void 0, function* () {
         // Add or update a document in collection "todos"
         try {
-            yield setDoc(doc(db, 'users', uid, 'todos', todo.id), todo);
-        }
-        catch (error) {
-            console.error("Error", error);
-        }
-    });
-}
-export function updateDoneFirestore(uid, todo) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Add or update a document in collection "todos"
-        try {
             const todoRef = doc(db, 'users', uid, 'todos', todo.id);
-            yield updateDoc(todoRef, { Done: todo.done });
+            yield setDoc(todoRef, todo);
         }
         catch (error) {
             console.error("Error", error);

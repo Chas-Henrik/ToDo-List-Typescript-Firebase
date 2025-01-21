@@ -1,7 +1,6 @@
 import { Todo, Todos } from "./types.js"
-import { auth, createTodoFirestore, readTodoFirestore, readTodosFirestore, updateTodoFirestore, updateDoneFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from "firebase/auth";
-
+import { auth, createTodoFirestore, readTodosFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from "../node_modules/firebase/auth";
 
 // Enums
 enum modeEnum {UNKNOWN, ADD, UPDATE};
