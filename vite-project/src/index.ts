@@ -200,8 +200,6 @@ async function loginDialogOkClicked(e: MouseEvent) {
             createUserWithEmailAndPassword(auth, email, psw)
                 .then((userCredential) => {
                     alert(`User '${userCredential.user.email}' created!`);
-                    signedInUser = userCredential.user;
-                    uid = signedInUser.uid;
                 })
                 .catch((error) => {
                     const errorStr: string = `Failed to create account!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
