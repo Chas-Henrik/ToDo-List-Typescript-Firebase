@@ -22,6 +22,15 @@
     display: none !important;
 }
 
+.svg-disabled {
+    cursor: default !important;
+    fill: #CCCCCC !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
 .text-align-left {
     text-align: left;
 }
@@ -50,18 +59,22 @@ h2 {
 
 /* Todo Buttons */
 
-#create-user-icon {
-    position: fixed;
-    top: 2rem;
-    right: 5rem;
-    cursor: pointer;
-}
-
-#login-user-icon {
+header {
     position: fixed;
     top: 2rem;
     right: 2rem;
-    cursor: pointer;
+    width: fit-content;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 1.5rem;
+    picture {
+        svg {
+            width: 2.4rem;
+            height: 2.4rem;
+            cursor: pointer;
+        }
+    }
 }
 
 .button-container {
@@ -79,7 +92,6 @@ h2 {
     box-shadow: var(--primary-box-shadow);
     border: var(--primary-border);
     border-radius: 5px;
-    cursor: pointer;
     font-size: 1.4rem;
     font-weight: 700;
 }

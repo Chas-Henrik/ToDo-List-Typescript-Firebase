@@ -1,23 +1,27 @@
 import { Todo, Todos } from "./types.js"
 import { auth, createTodoFirestore, readTodoFirestore, readTodosFirestore, updateTodoFirestore, updateDoneFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from "firebase/auth";
 
 
 // Enums
 enum modeEnum {UNKNOWN, ADD, UPDATE};
-enum userEnum {UNKNOWN, CREATE, LOGIN};
+enum userEnum {UNKNOWN, CREATE, LOGIN, LOGOUT};
 
 // Global Variables
 let todosArr: Todo[] = [];
 let dialogTodo: (Todo|null) = null;
 let todoDialogMode = modeEnum.UNKNOWN;
 let loginDialogMode = userEnum.UNKNOWN;
-let signedInUser: User;
+let signedInUser: (User|null) = null;
 let uid: string = '';
 
 // Main Window elements
-const createUserImg:(HTMLElement | null) = document.getElementById("create-user-icon");
-const loginUserImg:(HTMLElement | null) = document.getElementById("login-user-icon");
+const createUserSvg:(HTMLElement | null) = document.getElementById("create-user-icon");
+const loginUserPicture:(HTMLElement | null) = document.getElementById("login-user-picture");
+const loginUserSvg:(HTMLElement | null) = document.getElementById("login-user-icon");
+const logoutUserPicture:(HTMLElement | null) = document.getElementById("logout-user-picture");
+const logoutUserSvg:(HTMLElement | null) = document.getElementById("logout-user-icon");
+
 const addTodoBtn:(HTMLElement | null) = document.getElementById("add-todo-btn");
 const clearTodoListBtn:(HTMLElement | null) = document.getElementById("clear-todo-list-btn");
 const todoUL:(HTMLElement | null) = document.getElementById("todo-list");
@@ -38,15 +42,16 @@ const todoDialogCancelBtn:(HTMLElement | null) = document.getElementById("todo-d
 
 
 // Add Main Window event listeners
-createUserImg?.addEventListener('click', createUserImgClicked);
-loginUserImg?.addEventListener('click', loginUserImgClicked);
+createUserSvg?.addEventListener('click', createUserSvgClicked);
+loginUserSvg?.addEventListener('click', loginUserSvgClicked);
+logoutUserSvg?.addEventListener('click', logoutUserSvgClicked);
 addTodoBtn?.addEventListener('click', AddTodoBtnClicked);
 clearTodoListBtn?.addEventListener('click', clearTodoListClicked);
 todoUL?.addEventListener('click', todoListClicked);
 
 // Main Window event listeners
 
-function createUserImgClicked(_: MouseEvent): void {
+function createUserSvgClicked(_: MouseEvent): void {
     if(loginDialog) {
         loginDialogMode = userEnum.CREATE;
         if(loginDialogHeader)
@@ -55,12 +60,33 @@ function createUserImgClicked(_: MouseEvent): void {
     }
 }
 
-function loginUserImgClicked(_: MouseEvent): void {
-    if(loginDialog) {
+function loginUserSvgClicked(_: MouseEvent): void {
+    if(loginDialog && !signedInUser) {
         loginDialogMode = userEnum.LOGIN;
         if(loginDialogHeader)
             loginDialogHeader.textContent = "User Login";
         showLoginDialog();
+    }
+}
+
+function logoutUserSvgClicked(_: MouseEvent): void {
+    if(signedInUser) {
+        signOut(auth)
+        .then(() => {
+            const userEmail: (string|null|undefined) = signedInUser?.email;
+            signedInUser = null;
+            uid = '';
+            todosArr = [];
+            loginDialogMode = userEnum.LOGOUT;
+            setUIState(userEnum.LOGOUT);
+            renderTodoList();
+            alert(`User '${userEmail}' logged out!`);
+        })
+        .catch((error) => {
+            const errorStr: string = `Failed to logout!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+            console.error(errorStr);
+            alert(errorStr);
+        });
     }
 }
 
@@ -104,6 +130,35 @@ async function todoListClicked(e: Event): Promise<void> {
 
 
 // Main Window functions
+
+function setUIState(state: userEnum) {
+    switch(state) {
+        case userEnum.LOGOUT:
+            loginUserPicture?.setAttribute("title", "Login User");
+            loginUserSvg?.classList.remove("svg-disabled");
+            logoutUserPicture?.removeAttribute("title");
+            logoutUserSvg?.classList.add("svg-disabled");
+            addTodoBtn?.setAttribute("disabled", "true");
+            addTodoBtn?.removeAttribute("title");
+            addTodoBtn?.classList.remove("cursor-pointer");
+            clearTodoListBtn?.setAttribute("disabled", "true");
+            clearTodoListBtn?.removeAttribute("title");
+            clearTodoListBtn?.classList.remove("cursor-pointer");
+            break;
+        case userEnum.LOGIN:
+            loginUserPicture?.removeAttribute("title");
+            loginUserSvg?.classList.add("svg-disabled");
+            logoutUserPicture?.setAttribute("title", "Logout User");
+            logoutUserSvg?.classList.remove("svg-disabled");
+            addTodoBtn?.removeAttribute("disabled");
+            addTodoBtn?.setAttribute("title", "Add new todo");
+            addTodoBtn?.classList.add("cursor-pointer");
+            clearTodoListBtn?.removeAttribute("disabled");
+            clearTodoListBtn?.setAttribute("title", "Clear the entire todo list");
+            clearTodoListBtn?.classList.add("cursor-pointer");
+            break;
+    }
+}
 
 function findTodo(id: string | undefined): (Todo | null) {
     if(id !== undefined) {
@@ -213,8 +268,7 @@ async function loginDialogOkClicked(e: MouseEvent) {
                     alert(`User '${userCredential.user.email}' logged in!`);
                     signedInUser = userCredential.user;
                     uid = signedInUser.uid;
-                    addTodoBtn?.removeAttribute("disabled");
-                    clearTodoListBtn?.removeAttribute("disabled");
+                    setUIState(userEnum.LOGIN);
                     readTodosFirestore(uid)
                         .then((todos: Todo[]) => {
                             todosArr = todos;

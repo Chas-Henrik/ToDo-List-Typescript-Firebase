@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { auth, createTodoFirestore, readTodosFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 // Enums
 var modeEnum;
 (function (modeEnum) {
@@ -22,6 +22,7 @@ var userEnum;
     userEnum[userEnum["UNKNOWN"] = 0] = "UNKNOWN";
     userEnum[userEnum["CREATE"] = 1] = "CREATE";
     userEnum[userEnum["LOGIN"] = 2] = "LOGIN";
+    userEnum[userEnum["LOGOUT"] = 3] = "LOGOUT";
 })(userEnum || (userEnum = {}));
 ;
 // Global Variables
@@ -29,11 +30,14 @@ let todosArr = [];
 let dialogTodo = null;
 let todoDialogMode = modeEnum.UNKNOWN;
 let loginDialogMode = userEnum.UNKNOWN;
-let signedInUser;
+let signedInUser = null;
 let uid = '';
 // Main Window elements
-const createUserImg = document.getElementById("create-user-icon");
-const loginUserImg = document.getElementById("login-user-icon");
+const createUserSvg = document.getElementById("create-user-icon");
+const loginUserPicture = document.getElementById("login-user-picture");
+const loginUserSvg = document.getElementById("login-user-icon");
+const logoutUserPicture = document.getElementById("logout-user-picture");
+const logoutUserSvg = document.getElementById("logout-user-icon");
 const addTodoBtn = document.getElementById("add-todo-btn");
 const clearTodoListBtn = document.getElementById("clear-todo-list-btn");
 const todoUL = document.getElementById("todo-list");
@@ -50,13 +54,14 @@ const todoDialogTextArea = document.getElementById("todo-dialog-textarea");
 const todoDialogOkBtn = document.getElementById("todo-dialog-ok-btn");
 const todoDialogCancelBtn = document.getElementById("todo-dialog-cancel-btn");
 // Add Main Window event listeners
-createUserImg === null || createUserImg === void 0 ? void 0 : createUserImg.addEventListener('click', createUserImgClicked);
-loginUserImg === null || loginUserImg === void 0 ? void 0 : loginUserImg.addEventListener('click', loginUserImgClicked);
+createUserSvg === null || createUserSvg === void 0 ? void 0 : createUserSvg.addEventListener('click', createUserSvgClicked);
+loginUserSvg === null || loginUserSvg === void 0 ? void 0 : loginUserSvg.addEventListener('click', loginUserSvgClicked);
+logoutUserSvg === null || logoutUserSvg === void 0 ? void 0 : logoutUserSvg.addEventListener('click', logoutUserSvgClicked);
 addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.addEventListener('click', AddTodoBtnClicked);
 clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.addEventListener('click', clearTodoListClicked);
 todoUL === null || todoUL === void 0 ? void 0 : todoUL.addEventListener('click', todoListClicked);
 // Main Window event listeners
-function createUserImgClicked(_) {
+function createUserSvgClicked(_) {
     if (loginDialog) {
         loginDialogMode = userEnum.CREATE;
         if (loginDialogHeader)
@@ -64,12 +69,32 @@ function createUserImgClicked(_) {
         showLoginDialog();
     }
 }
-function loginUserImgClicked(_) {
-    if (loginDialog) {
+function loginUserSvgClicked(_) {
+    if (loginDialog && !signedInUser) {
         loginDialogMode = userEnum.LOGIN;
         if (loginDialogHeader)
             loginDialogHeader.textContent = "User Login";
         showLoginDialog();
+    }
+}
+function logoutUserSvgClicked(_) {
+    if (signedInUser) {
+        signOut(auth)
+            .then(() => {
+            const userEmail = signedInUser === null || signedInUser === void 0 ? void 0 : signedInUser.email;
+            signedInUser = null;
+            uid = '';
+            todosArr = [];
+            loginDialogMode = userEnum.LOGOUT;
+            setUIState(userEnum.LOGOUT);
+            renderTodoList();
+            alert(`User '${userEmail}' logged out!`);
+        })
+            .catch((error) => {
+            const errorStr = `Failed to logout!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
+            console.error(errorStr);
+            alert(errorStr);
+        });
     }
 }
 function AddTodoBtnClicked(_) {
@@ -112,6 +137,34 @@ function todoListClicked(e) {
     });
 }
 // Main Window functions
+function setUIState(state) {
+    switch (state) {
+        case userEnum.LOGOUT:
+            loginUserPicture === null || loginUserPicture === void 0 ? void 0 : loginUserPicture.setAttribute("title", "Login User");
+            loginUserSvg === null || loginUserSvg === void 0 ? void 0 : loginUserSvg.classList.remove("svg-disabled");
+            logoutUserPicture === null || logoutUserPicture === void 0 ? void 0 : logoutUserPicture.removeAttribute("title");
+            logoutUserSvg === null || logoutUserSvg === void 0 ? void 0 : logoutUserSvg.classList.add("svg-disabled");
+            addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.setAttribute("disabled", "true");
+            addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.removeAttribute("title");
+            addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.classList.remove("cursor-pointer");
+            clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.setAttribute("disabled", "true");
+            clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.removeAttribute("title");
+            clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.classList.remove("cursor-pointer");
+            break;
+        case userEnum.LOGIN:
+            loginUserPicture === null || loginUserPicture === void 0 ? void 0 : loginUserPicture.removeAttribute("title");
+            loginUserSvg === null || loginUserSvg === void 0 ? void 0 : loginUserSvg.classList.add("svg-disabled");
+            logoutUserPicture === null || logoutUserPicture === void 0 ? void 0 : logoutUserPicture.setAttribute("title", "Logout User");
+            logoutUserSvg === null || logoutUserSvg === void 0 ? void 0 : logoutUserSvg.classList.remove("svg-disabled");
+            addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.removeAttribute("disabled");
+            addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.setAttribute("title", "Add new todo");
+            addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.classList.add("cursor-pointer");
+            clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.removeAttribute("disabled");
+            clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.setAttribute("title", "Clear the entire todo list");
+            clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.classList.add("cursor-pointer");
+            break;
+    }
+}
 function findTodo(id) {
     if (id !== undefined) {
         const index = todosArr.findIndex((todo) => todo.id === id);
@@ -217,8 +270,7 @@ function loginDialogOkClicked(e) {
                     alert(`User '${userCredential.user.email}' logged in!`);
                     signedInUser = userCredential.user;
                     uid = signedInUser.uid;
-                    addTodoBtn === null || addTodoBtn === void 0 ? void 0 : addTodoBtn.removeAttribute("disabled");
-                    clearTodoListBtn === null || clearTodoListBtn === void 0 ? void 0 : clearTodoListBtn.removeAttribute("disabled");
+                    setUIState(userEnum.LOGIN);
                     readTodosFirestore(uid)
                         .then((todos) => {
                         todosArr = todos;
