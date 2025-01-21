@@ -1,7 +1,7 @@
 import { Todos, Todo } from "./types.js"
-import { FirebaseApp, initializeApp } from 'firebase/app';
-import { Firestore, getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query } from "firebase/firestore/lite";
-import { Auth, getAuth } from "firebase/auth";
+import { FirebaseApp, initializeApp } from '../node_modules/firebase/app';
+import { Firestore, getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query } from "../node_modules/firebase/firestore/lite";
+import { Auth, getAuth } from "../node_modules/firebase/auth";
 
 // Firebase project configuration
 const firebaseConfig = {

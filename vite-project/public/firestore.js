@@ -7,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query } from "firebase/firestore/lite";
-import { getAuth } from "firebase/auth";
+import { initializeApp } from '../node_modules/firebase/app';
+import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query } from "../node_modules/firebase/firestore/lite";
+import { getAuth } from "../node_modules/firebase/auth";
 // Firebase project configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDkLzs8sAZ1dlk2-kRa2KMcb01wwqBVfrk",
