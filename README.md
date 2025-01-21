@@ -1,4 +1,4 @@
-# ToDo list typescript firebase
+# ToDo List Typescript Firebase
 
 This is a single-page, 'Todo list application' that uses Google Firestore to store the logged-in user's Todo list.
 
