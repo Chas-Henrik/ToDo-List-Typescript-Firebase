@@ -36,14 +36,10 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - name: Check current working folder
-        run: pwd && ls -al
-      - name: Change working folder
-        run: cd vite-project && cat package.json
       - name: Install dependencies
         run: npm ci && npm install
       - name: Build
-        run: npm run build
+        run: cd vite-project && npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
