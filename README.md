@@ -14,8 +14,8 @@ The site uses HTML5, CSS & TypeScript and the following functionality is support
   
 ***
 *Known problems:*
-1. The site has not been published (I don't know how to deploy firebase projects on GitHub or Netlify and did not have enough time to investigate this).
-2. The source code contains a unprotected plain text key (`apiKey`) which compromises security.
+1. The site has not been published (I don't know how to deploy Vite-Firebase projects on GitHub or Netlify).
+2. The source code contains a unprotected plain text key (`apiKey`) which compromises security. Fortunately the security breach is minor, see [https://infosecwriteups.com/is-it-safe-to-expose-your-firebase-api-key-bf2a318c0f29](https://infosecwriteups.com/is-it-safe-to-expose-your-firebase-api-key-bf2a318c0f29) for more information.
   
 *Notes:*
 1. The whole Todo list is re-rendered when a Todo item is added, updated or deleted and this is not optimal from a performance perspective (especially if the Todo list becomes large).
