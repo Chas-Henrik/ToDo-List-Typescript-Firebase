@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "tsc": "tsc -w",
+    "vite": "vite",
+    "dev": "npm-run-all --parallel tsc vite",
     "build": "vite build",
     "preview": "vite preview"
   },
