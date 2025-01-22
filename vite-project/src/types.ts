@@ -3,9 +3,3 @@ export type Todo = {
     text: string,
     done: boolean
 }
-
-export type Todos = {
-    nextId: number,
-    todos: Todo[]
-}
-

@@ -1,4 +1,4 @@
-import { Todo, Todos } from "./types.js"
+import { Todo } from "./types.js"
 import { auth, createTodoFirestore, readTodosFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from "../node_modules/firebase/auth";
 

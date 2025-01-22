@@ -1,4 +1,4 @@
-import { Todos, Todo } from "./types.js"
+import { Todo } from "./types.js"
 import { FirebaseApp, initializeApp } from '../node_modules/firebase/app';
 import { Firestore, getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, DocumentReference, DocumentData, DocumentSnapshot, Query, QuerySnapshot } from "../node_modules/firebase/firestore/lite";
 import { Auth, getAuth } from "../node_modules/firebase/auth";
