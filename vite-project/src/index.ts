@@ -130,7 +130,7 @@ async function todoListClicked(e: Event): Promise<void> {
 
 // Main Window functions
 
-function setUIState(state: userEnum) {
+function setUIState(state: userEnum): void {
     switch(state) {
         case userEnum.LOGOUT:
             loginUserPicture?.setAttribute("title", "Login User");
@@ -238,7 +238,7 @@ loginDialogCancelBtn?.addEventListener('click', loginDialogCancelClicked);
 
 // Login Dialog event listeners
 
-async function loginDialogOkClicked(e: MouseEvent) {
+async function loginDialogOkClicked(e: MouseEvent): Promise<void> {
     if(loginDialogEmailInput === null || loginDialogPasswordInput === null || 
         !loginDialogEmailInput.validity.valid || !loginDialogPasswordInput.validity.valid
     ) {
