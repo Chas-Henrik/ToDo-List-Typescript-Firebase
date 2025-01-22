@@ -7,10 +7,12 @@ The design is a 'Mobile First' responsive design that also support Tablet's and 
 The site uses HTML5, CSS & TypeScript and the following functionality is supported (apart from displaying the Todo list):
 1. Add a new Todo item.
 2. Delete a new Todo item.
-3. Update a Todo item (by clicking the todo text).
+3. Update a Todo item (by clicking the Todo text).
 4. Mark Todo item as done.
 5. Clearing the while Todo list.
 6. Simple authentication with E-mail & password.
+
+Effort has been spent on making the application as user friendly as possible, where buttons are disabled for each application state (i.e. logged-in, logged-out) to prevent the user from making an incorrect choice.
   
 The site has been published on GitHub pages:  
 Link to site:  
