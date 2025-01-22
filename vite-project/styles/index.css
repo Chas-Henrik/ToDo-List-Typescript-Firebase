@@ -146,19 +146,21 @@ header {
         text-decoration: none;
         border-bottom: var(--primary-border);
         background-color: #FFF;
-    }
-    button {
-        width: 1.5rem;
-        cursor: pointer;
-    }
-    p {
-        cursor: pointer;
-    }
-    input[type="checkbox"] {
-        cursor: pointer;
-        margin-left: 2rem;
-        width: 1.5rem;
-        height: 1.5rem;
+        button {
+            width: 1.75rem;
+            height: 1.75rem;
+            text-align: center;
+            cursor: pointer;
+        }
+        p {
+            cursor: pointer;
+        }
+        input[type="checkbox"] {
+            margin-left: 2rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            cursor: pointer;
+        }
     }
     li:last-child{
         border-bottom: none;
