@@ -68,7 +68,7 @@ header {
     justify-content: space-between;
     align-items: center;
     column-gap: 1.5rem;
-    picture {
+    div {
         svg {
             width: 2.4rem;
             height: 2.4rem;
