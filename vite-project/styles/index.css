@@ -152,6 +152,8 @@ header {
             text-align: center;
             cursor: pointer;
             /* Workaround for 'Safari Circular Buttons' bug */
+            color: black;
+            border: 1px solid black;
             -webkit-appearance: none !important;
             -webkit-border-radius: 5px !important;
             border-radius: 5 !important;
