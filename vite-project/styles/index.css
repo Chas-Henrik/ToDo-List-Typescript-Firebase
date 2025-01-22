@@ -42,7 +42,7 @@
 body {
     margin: 5rem 1rem;
     background-color: var(--primary-background);
-    min-width: 40rem;
+    min-width: 30rem;
 }
 
 h1 {
