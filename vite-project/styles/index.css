@@ -151,7 +151,7 @@ header {
             height: 1.75rem;
             text-align: center;
             cursor: pointer;
-            /* Workaround for 'Safari Circular Buttons' bug */
+            /* Workaround for 'Circular Delete Buttons Safari' bug */
             color: black;
             border: 1px solid black;
             -webkit-appearance: none;
