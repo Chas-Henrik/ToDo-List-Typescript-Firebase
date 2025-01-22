@@ -40,7 +40,7 @@
 }
 
 body {
-    padding: 5rem;
+    margin: 5rem 1rem;
     background-color: var(--primary-background);
     min-width: 40rem;
 }
@@ -87,7 +87,7 @@ header {
 }
 
 .button-container button {
-    width: 20rem;
+    width: 15rem;
     padding: 1rem 2rem;
     box-shadow: var(--primary-box-shadow);
     border: var(--primary-border);
