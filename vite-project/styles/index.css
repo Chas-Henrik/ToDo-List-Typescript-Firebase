@@ -154,9 +154,10 @@ header {
             /* Workaround for 'Circular Delete Buttons Safari' bug */
             color: black;
             border: 1px solid black;
-            -webkit-appearance: none;
-            -webkit-border-radius: 5px;
-            border-radius: 5;
+            border-radius: 5px;
+            -webkit-border-radius: 5px; /* Safari */
+            -webkit-appearance: none; /* Remove default style */
+            border: none; /* Remove default border */
         }
         p {
             cursor: pointer;
