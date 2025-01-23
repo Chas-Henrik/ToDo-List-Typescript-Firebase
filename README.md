@@ -27,5 +27,8 @@ Link to site:
 *Notes:*
 1. The whole Todo list is re-rendered when a Todo item is added, updated or deleted and this is not optimal from a performance perspective (especially if the Todo list becomes large).
 2. The Todo list is sorted each time it's rendered which can also become a performance issue if the Todo list grows larger.
+3. Firebase creates the Todo Id to assure that each Id is unique even if the same user accesses the database simultaneously from two (or more) devices.
+4. The whole Todo List is read from the DB when the page is loaded which is not optimal from a performance perspective. This could be optimized by reading smaller chunks of the DB (e.g. by reading only as many items that fits on the screen, and read more DB chunks when the user scrolls the Todo List).
+5. It is questionably if any User's Todo list will ever grow larger than 100 entries, so the performance issues could be added as 'future improvements' (when & if this becomes an issue).
   
 ***
