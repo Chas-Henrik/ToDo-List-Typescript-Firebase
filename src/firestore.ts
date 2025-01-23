@@ -5,7 +5,7 @@ import { Auth, getAuth } from "../node_modules/firebase/auth";
 
 // Firebase project configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyDkLzs8sAZ1dlk2-kRa2KMcb01wwqBVfrk",
+    apiKey: import.meta.env.VITE_API_KEY,
     authDomain: "todo-list-64101.firebaseapp.com",
     projectId: "todo-list-64101",
     storageBucket: "todo-list-64101.firebasestorage.app",
