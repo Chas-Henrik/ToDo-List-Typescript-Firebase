@@ -156,7 +156,6 @@ header {
             border: 1px solid black;
             appearance: none; /* Remove default style */
             border-radius: 5px;
-            -webkit-border-radius: 5px; /* Safari */
         }
         p {
             cursor: pointer;
