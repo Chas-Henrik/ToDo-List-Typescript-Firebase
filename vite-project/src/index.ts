@@ -1,5 +1,5 @@
-import { Todo } from "./types.js"
-import { auth, createTodoFirestore, readTodosFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.js";
+import { Todo } from "./types.ts"
+import { auth, createTodoFirestore, readTodosFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.ts";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from "../node_modules/firebase/auth";
 
 // Enums
