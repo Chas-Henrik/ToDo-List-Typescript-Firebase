@@ -194,9 +194,11 @@ async function updateTodo(id:string, todoStr: string): Promise<void> {
 
 async function clearTodoList(): Promise<void> {
     try {
-        await deleteTodosFirestore(uid, todosArr);
-        todosArr = [];
-        renderTodoList();
+        if (window.confirm("Are you sure you want to clear the entire todo list?")) {
+            await deleteTodosFirestore(uid, todosArr);
+            todosArr = [];
+            renderTodoList();
+        }
     } catch (error) {
         console.error(error);
     }
@@ -216,7 +218,7 @@ async function deleteTodo(id: string | undefined): Promise<boolean> {
 function renderTodoList(): void {
     if(todoUL) {
         todoUL.innerHTML = todosArr.
-        sort((a:Todo, b:Todo) => sortAscending(a.text, b.text)).
+        sort((a:Todo, b:Todo) => b.timestamp - a.timestamp).
         map((todo) => {
             const checked:string = (todo.done) ? "checked": "";
             return `
@@ -326,16 +328,6 @@ function loginDialogCancelClicked(_: MouseEvent): void {
 }
 
 // Login Dialog functions
-
-function sortAscending(a: string, b: string): number {
-    if(a === b) {
-        return 0;
-    } else if(a < b) {
-        return -1;
-    } else {
-        return 1;
-    }
-}
 
 function showLoginDialog(): void {
     (loginDialog as HTMLDialogElement)?.showModal();

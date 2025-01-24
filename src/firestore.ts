@@ -29,10 +29,11 @@ export const db: Firestore = getFirestore(app);
 
 export async function createTodoFirestore(uid: string): Promise<Todo|null> {
     // Add a new document with a generated id.
-    const todo:Todo = {id:'', text:'', done:false};
+    const todo:Todo = {id:'', timestamp:0, text:'', done:false};
     try {
         const docRef: DocumentReference<DocumentData,DocumentData> = await addDoc(collection(db, 'users', uid, 'todos'), todo);
         todo.id = docRef.id;
+        todo.timestamp = Date.now();
         return todo;
     } catch (error) {
         console.error("Error", error);
@@ -43,7 +44,7 @@ export async function createTodoFirestore(uid: string): Promise<Todo|null> {
 export async function readTodosFirestore(uid: string): Promise<Todo[]> {
     // Get a list of todos from your database
     try {
-        const todosQuery: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'), orderBy("text"));
+        const todosQuery: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'), orderBy("timestamp", "desc"));
         const querySnapshot: QuerySnapshot<DocumentData, DocumentData> = await getDocs(todosQuery);
         if(!querySnapshot.empty) {
             return querySnapshot.docs.map(doc => doc.data() as Todo);
@@ -61,7 +62,7 @@ export async function readPageTodoFirestore(uid: string, first: boolean, size: n
     try {
         if(first) {
             // Query the first page of docs
-            const first: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'), orderBy("text"), limit(size));
+            const first: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'), orderBy("timestamp", "desc"));
             pagePosition = await getDocs(first);
             return pagePosition.docs.map(doc => doc.data() as Todo);
         }
@@ -71,7 +72,7 @@ export async function readPageTodoFirestore(uid: string, first: boolean, size: n
 
             // Construct a new query starting at the last visible document, get the next todos.
             const next: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'),
-                orderBy("text"),
+                orderBy("timestamp", "desc"),
                 startAfter(lastVisible),
                 limit(size));
             pagePosition = await getDocs(next);
