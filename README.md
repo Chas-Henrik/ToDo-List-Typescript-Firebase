@@ -14,7 +14,7 @@ The site uses HTML5, CSS & TypeScript and the following functionality is support
 7. The Todo items are timestamped and the Todo list is sorted by creation time in descending order (i.e. the newest todo first).
 
 Effort has been made making the application as user friendly as possible, where buttons are disabled for each application state (i.e. logged-in, logged-out) to prevent the user from making an invalid choice.
-Effort has also been made to read the todo list in smaller chunks when the User login to optimize performance and speed up 'user perceived load time'. Unfortunately this also imposes a limitation as Firestore has no support for case insensitive sorting of the data so the todo List is sorted insensitive to be able to append pages read from the DB to the rendered list without re-rendering the whole list.
+Effort has also been made to read the todo list in smaller chunks when the User login to optimize performance and speed up 'the user's perceived load time'.
   
 The site has been published on GitHub pages:  
 Link to site:  
