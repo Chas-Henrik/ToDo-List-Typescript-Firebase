@@ -12,6 +12,8 @@ pages:
     - npm install
     - npm run build
     - cp -a dist/. public/
+  env:
+    VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
   artifacts:
     paths:
       - public
