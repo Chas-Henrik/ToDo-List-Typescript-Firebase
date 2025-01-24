@@ -1,7 +1,11 @@
 import { Todo } from "./types.ts"
 import { FirebaseApp, initializeApp } from '../node_modules/firebase/app';
-import { Firestore, getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, deleteDoc, query, DocumentReference, DocumentData, DocumentSnapshot, Query, QuerySnapshot } from "../node_modules/firebase/firestore/lite";
+import { Firestore, getFirestore, collection, doc, addDoc, getDocs, setDoc, deleteDoc } from "../node_modules/firebase/firestore/lite";
+import { query, DocumentReference, DocumentData, Query, QuerySnapshot, QueryDocumentSnapshot } from "../node_modules/firebase/firestore/lite"; 
+import { orderBy, startAfter, limit } from "../node_modules/firebase/firestore/lite"; 
 import { Auth, getAuth } from "../node_modules/firebase/auth";
+
+let pagePosition: QuerySnapshot<DocumentData, DocumentData>;
 
 // Firebase project configuration
 const firebaseConfig = {
@@ -36,31 +40,42 @@ export async function createTodoFirestore(uid: string): Promise<Todo|null> {
     }
 }
 
-export async function readTodoFirestore(uid: string, id:string): Promise<Todo|null> {
-    // Get a todo from your database
-    try {
-        const docRef: DocumentReference<DocumentData,DocumentData> = doc(db, 'users', uid, 'todos', id);
-        const docSnap: DocumentSnapshot<DocumentData,DocumentData> = await getDoc(docRef);
-        if(docSnap.exists()){
-            return docSnap.data() as Todo;
-        } else {
-            return null;
-        }
-    } catch (error) {
-        console.error("Error", error);
-        return null;
-    }
-}
-
 export async function readTodosFirestore(uid: string): Promise<Todo[]> {
     // Get a list of todos from your database
     try {
-        const todosQuery: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'));
+        const todosQuery: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'), orderBy("text"));
         const querySnapshot: QuerySnapshot<DocumentData, DocumentData> = await getDocs(todosQuery);
         if(!querySnapshot.empty) {
             return querySnapshot.docs.map(doc => doc.data() as Todo);
         } else {
             return [];
+        }
+    } catch (error) {
+        console.error("Error", error);
+        return [];
+    }
+}
+
+export async function readPageTodoFirestore(uid: string, first: boolean, size: number): Promise<Todo[]> {
+    // Get a page of todos from your database
+    try {
+        if(first) {
+            // Query the first page of docs
+            const first: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'), orderBy("text"), limit(size));
+            pagePosition = await getDocs(first);
+            return pagePosition.docs.map(doc => doc.data() as Todo);
+        }
+        else {
+            // Get the last visible document
+            const lastVisible: QueryDocumentSnapshot<DocumentData, DocumentData> = pagePosition.docs[pagePosition.docs.length-1];
+
+            // Construct a new query starting at the last visible document, get the next todos.
+            const next: Query<DocumentData,DocumentData> = query(collection(db, 'users', uid, 'todos'),
+                orderBy("text"),
+                startAfter(lastVisible),
+                limit(size));
+            pagePosition = await getDocs(next);
+            return pagePosition.docs.map(doc => doc.data() as Todo);
         }
     } catch (error) {
         console.error("Error", error);

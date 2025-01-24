@@ -1,5 +1,5 @@
 import { Todo } from "./types.ts"
-import { auth, createTodoFirestore, readTodosFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.ts";
+import { auth, createTodoFirestore, readPageTodoFirestore, updateTodoFirestore, deleteTodoFirestore, deleteTodosFirestore } from "./firestore.ts";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from "../node_modules/firebase/auth";
 
 // Enums
@@ -216,7 +216,7 @@ async function deleteTodo(id: string | undefined): Promise<boolean> {
 function renderTodoList(): void {
     if(todoUL) {
         todoUL.innerHTML = todosArr.
-        sort((a:Todo, b:Todo) => sortAscending(a.text.toLowerCase(), b.text.toLowerCase())).
+        sort((a:Todo, b:Todo) => sortAscending(a.text, b.text)).
         map((todo) => {
             const checked:string = (todo.done) ? "checked": "";
             return `
@@ -226,6 +226,41 @@ function renderTodoList(): void {
                 <input type="checkbox" title="Toggle done" ${checked}>
             </li>`;
         }).join('');
+    }
+}
+
+async function renderTodoListAsync(uid: string): Promise<void> {
+    let todosPage: Todo[] = [];
+    let firstPage: boolean = true;
+    const pageSize: number = 5;
+
+    do {
+        try {
+            todosPage = await readPageTodoFirestore(uid, firstPage, pageSize);
+            firstPage = false;
+            todosArr = [...todosArr, ...todosPage];
+            appendTodoList(todosPage);
+        } catch (error) {
+            const errorStr: string = `Failed to read from DB!\n\nError Code: ${(error as any).code}\nError Message: ${(error as any).message}`;
+            console.error(errorStr);
+            alert(errorStr);
+        }
+    } while(todosPage.length>0);
+}
+
+function appendTodoList(todos: Todo[]): void {
+    if(todoUL) {
+        todos.forEach((todo:Todo) => {
+            const checked:string = (todo.done) ? "checked": "";
+            const todoElement = document.createElement("li");
+            todoElement.dataset.id = todo.id;
+            todoElement.classList.add("grid-list");
+            todoElement.innerHTML = `
+                    <button title="Delete todo">X</button>
+                    <p title="Update todo">${todo.text}</p>
+                    <input type="checkbox" title="Toggle done" ${checked}>`;
+            todoUL.appendChild(todoElement)
+        });
     }
 }
 
@@ -263,21 +298,12 @@ async function loginDialogOkClicked(e: MouseEvent): Promise<void> {
             break;
         case userEnum.LOGIN:
             signInWithEmailAndPassword(auth, email, psw)
-                .then((userCredential) => {
-                    alert(`User '${userCredential.user.email}' logged in!`);
+                .then(async (userCredential) => {
                     signedInUser = userCredential.user;
                     uid = signedInUser.uid;
                     setUIState(userEnum.LOGIN);
-                    readTodosFirestore(uid)
-                        .then((todos: Todo[]) => {
-                            todosArr = todos;
-                            renderTodoList();
-                        })
-                        .catch((error) => {
-                                const errorStr: string = `Failed to read from DB!\n\nError Code: ${error.code}\nError Message: ${error.message}`;
-                                console.error(errorStr);
-                                alert(errorStr);
-                        });
+                    await renderTodoListAsync(uid);
+                    alert(`User '${userCredential.user.email}' logged in!`);
                 })
                 .catch((error) => {
                     const errorStr: string = `Failed to login to server!\n\nError Code: ${error.code}\nError Message: ${error.message}`;

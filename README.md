@@ -12,7 +12,8 @@ The site uses HTML5, CSS & TypeScript and the following functionality is support
 5. Clearing the while Todo list.
 6. Simple authentication with E-mail & password.
 
-Effort has been spent on making the application as user friendly as possible, where buttons are disabled for each application state (i.e. logged-in, logged-out) to prevent the user from making an incorrect choice.
+Effort has been made making the application as user friendly as possible, where buttons are disabled for each application state (i.e. logged-in, logged-out) to prevent the user from making an invalid choice.
+Effort has also been made to read the todo list in smaller chunks when the User login to optimize performance and speed up 'user perceived load time'. Unfortunately this also imposes a limitation as Firestore has no support for case insensitive sorting of the data so the todo List is sorted insensitive to be able to append pages read from the DB to the rendered list without re-rendering the whole list.
   
 The site has been published on GitHub pages:  
 Link to site:  
@@ -21,15 +22,14 @@ Link to site:
 
 ***
 *Known problems:*
-1. The source code contains a unprotected plain text key (`apiKey`) which compromises security. Fortunately the security breach is minor, see [https://infosecwriteups.com/is-it-safe-to-expose-your-firebase-api-key-bf2a318c0f29](https://infosecwriteups.com/is-it-safe-to-expose-your-firebase-api-key-bf2a318c0f29) for more information.
-2. The authentication is the simplest possible where the User Credentials only contains E-mail Address & Password, and there is no support for changing the Password after the User Account has been created.
+1. The authentication is the simplest possible where the User Credentials only contains E-mail Address & Password, and there is no support for changing the Password after the User Account has been created.
+2. The application is not optimal from a performance perspective.
   
 *Notes:*
 1. The whole Todo list is re-rendered when a Todo item is added, updated or deleted and this is not optimal from a performance perspective (especially if the Todo list becomes large).
-2. The Todo list is sorted each time it's rendered which can also become a performance issue if the Todo list grows larger.
+2. The Todo list is sorted each time it's re-rendered which could become a performance issue when the Todo list grows larger.
 3. Firebase creates the Todo Id to assure that each Id is unique even if the same user accesses the database simultaneously from two (or more) devices.
-4. The whole Todo List is read from the DB when the page is loaded which is not optimal from a performance perspective. This could be optimized by reading smaller chunks of the DB (e.g. by reading only as many items that fits on the screen, and read more DB chunks when the user scrolls the Todo List).
-5. It is questionably if any User's Todo list will ever grow larger than 100 entries, so the performance issues could be added as 'future improvements' (when & if this becomes an issue).
-6. The Todo list is only read from the database at User Login and no effort has been made to keep the local content up to date after that (in case the database us updated from another device), since it is unlikely that the user updates the Todo list on multiple devices simultaneously.
+4. It is questionably if any User's Todo list will ever grow larger than 100 entries, so the performance issues could be added as 'future improvements' (when & if this become an issue).
+5. The Todo list is only read from the database at User Login and no effort has been made to keep the local content 'up to date' after that (in case the database us updated from another device). It is unlikely that the user updates the Todo list on multiple devices simultaneously though.
   
 ***
