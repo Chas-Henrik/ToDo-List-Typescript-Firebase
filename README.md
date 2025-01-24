@@ -30,5 +30,6 @@ Link to site:
 3. Firebase creates the Todo Id to assure that each Id is unique even if the same user accesses the database simultaneously from two (or more) devices.
 4. The whole Todo List is read from the DB when the page is loaded which is not optimal from a performance perspective. This could be optimized by reading smaller chunks of the DB (e.g. by reading only as many items that fits on the screen, and read more DB chunks when the user scrolls the Todo List).
 5. It is questionably if any User's Todo list will ever grow larger than 100 entries, so the performance issues could be added as 'future improvements' (when & if this becomes an issue).
+6. The Todo list is only read from the database at User Login and no effort has been made to keep the local content up to date after that (in case the database us updated from another device), since it is unlikely that the user updates the Todo list on multiple devices simultaneously.
   
 ***
