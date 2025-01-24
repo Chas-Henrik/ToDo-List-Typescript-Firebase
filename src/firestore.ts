@@ -7,6 +7,8 @@ import { Auth, getAuth } from "../node_modules/firebase/auth";
 
 let pagePosition: QuerySnapshot<DocumentData, DocumentData>;
 
+console.log("VITE_API_KEY",import.meta.env.VITE_API_KEY);
+
 // Firebase project configuration
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_API_KEY,
