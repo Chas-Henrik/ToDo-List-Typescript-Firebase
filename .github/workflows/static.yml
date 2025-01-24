@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build
-        run: npm run build && echo $VITE_API_KEY
+        run: npm run build && echo ${{ secrets.VITE_API_KEY }}
         env:
           VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
       - name: Setup Pages
