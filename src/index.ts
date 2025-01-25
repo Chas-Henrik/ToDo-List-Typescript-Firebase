@@ -78,7 +78,7 @@ function logoutUserSvgClicked(_: MouseEvent): void {
             todosArr = [];
             loginDialogMode = userEnum.LOGOUT;
             setUIState(userEnum.LOGOUT);
-            renderTodoList();
+            clearTodoListElements();
             alert(`User '${userEmail}' logged out!`);
         })
         .catch((error) => {
@@ -209,7 +209,7 @@ async function clearTodoList(): Promise<void> {
         if (window.confirm("Are you sure you want to clear the entire todo list?")) {
             await deleteTodosFirestore(uid, todosArr);
             todosArr = [];
-            renderTodoList();
+            clearTodoListElements();
         }
     } catch (error) {
         console.error(error);
@@ -251,8 +251,9 @@ function updateTodoElement(todo:Todo): void {
         if(element) {
             const pElement: (HTMLParagraphElement | null) = element.querySelector('p');
             const inputElement: (HTMLInputElement | null) = element.querySelector('input');
-            if(pElement)
+            if(pElement){
                 pElement.textContent = todo.text;
+            }
             if(inputElement) {
                 inputElement.checked = todo.done;
             }
@@ -269,21 +270,28 @@ function deleteTodoElement(todo:Todo): void {
     }
 }
 
-function renderTodoList(): void {
+function clearTodoListElements(): void {
     if(todoUL) {
-        todoUL.innerHTML = todosArr.
-        sort((a:Todo, b:Todo) => b.timestamp - a.timestamp).
-        map((todo) => {
-            const checked:string = (todo.done) ? "checked": "";
-            return `
-            <li class="grid-list" data-id=${todo.id}>
-                <button title="Delete todo">X</button>
-                <p title="Update todo">${todo.text}</p>
-                <input type="checkbox" title="Toggle done" ${checked}>
-            </li>`;
-        }).join('');
+        todoUL.innerHTML = '';
     }
 }
+
+// renderTodoList is left here in case it will become needed in the future
+// function renderTodoList(): void {
+//     if(todoUL) {
+//         todoUL.innerHTML = todosArr.
+//         sort((a:Todo, b:Todo) => b.timestamp - a.timestamp).
+//         map((todo) => {
+//             const checked:string = (todo.done) ? "checked": "";
+//             return `
+//             <li class="grid-list" data-id=${todo.id}>
+//                 <button title="Delete todo">X</button>
+//                 <p title="Update todo">${todo.text}</p>
+//                 <input type="checkbox" title="Toggle done" ${checked}>
+//             </li>`;
+//         }).join('');
+//     }
+// }
 
 async function renderTodoListAsync(uid: string): Promise<void> {
     let todosPage: Todo[] = [];
