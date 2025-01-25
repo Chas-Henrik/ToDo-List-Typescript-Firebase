@@ -103,23 +103,24 @@ async function todoListClicked(e: Event): Promise<void> {
     if(element) {
         const parentElement:(HTMLElement | null) = element.parentElement as HTMLElement | null;
         if(parentElement) {
-            let foundTodo: (Todo|null);
+            let todo: (Todo|null);
             switch(element.tagName.toLowerCase()) {
                 case 'button':
                     await deleteTodo(parentElement.dataset.id);
                     break;
                 case 'p':
-                    foundTodo = findTodo(parentElement.dataset.id);
-                    if(foundTodo) {
+                    todo = findTodo(parentElement.dataset.id);
+                    if(todo) {
                         todoDialogMode = todoEnum.UPDATE;
-                        showTodoDialog(foundTodo);
+                        showTodoDialog(todo);
                     }
                     break;
                 case 'input':
-                    foundTodo = findTodo(parentElement.dataset.id);
-                    if(foundTodo) {
-                        foundTodo.done = (element as HTMLInputElement).checked;
-                        await updateTodoFirestore(uid, foundTodo);
+                    todo = findTodo(parentElement.dataset.id);
+                    if(todo) {
+                        todo.done = (element as HTMLInputElement).checked;
+                        await updateTodoFirestore(uid, todo);
+                        updateTodoElement(todo);
                     }
                     break;
             }
@@ -184,21 +185,20 @@ async function addTodo(todoStr: string): Promise<void> {
 }
 
 async function updateTodo(id:string, todoStr: string): Promise<void> {
-    const foundTodo:(Todo | null) = findTodo(id);
-    if(foundTodo) {
-        foundTodo.text = todoStr;
-        await updateTodoFirestore(uid, foundTodo);
-        updateTodoElement(foundTodo);
+    const todo:(Todo | null) = findTodo(id);
+    if(todo) {
+        todo.text = todoStr;
+        await updateTodoFirestore(uid, todo);
+        updateTodoElement(todo);
     }
 }
 
 async function deleteTodo(id: string | undefined): Promise<boolean> {
     const index:number = todosArr.findIndex((todo) => todo.id === id);
     if(index !== -1) {
-        const todo: Todo = todosArr[index];
-        await deleteTodoFirestore(uid, todo);
+        await deleteTodoFirestore(uid, todosArr[index]);
+        deleteTodoElement(todosArr[index]);
         todosArr.splice(index,1);
-        deleteTodoElement(todo);
         return true;
     }
     return false;
