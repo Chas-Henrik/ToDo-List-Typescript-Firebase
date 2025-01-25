@@ -177,7 +177,7 @@ async function addTodo(todoStr: string): Promise<void> {
         todo.done = false;
         todosArr.push(todo);
         await updateTodoFirestore(uid, todo);
-        renderTodoList();
+        addTodoElement(todo);
     } else {
         console.error("Failed to create todo in Firestore");
     }
@@ -188,8 +188,20 @@ async function updateTodo(id:string, todoStr: string): Promise<void> {
     if(foundTodo) {
         foundTodo.text = todoStr;
         await updateTodoFirestore(uid, foundTodo);
-        renderTodoList();
+        updateTodoElement(foundTodo);
     }
+}
+
+async function deleteTodo(id: string | undefined): Promise<boolean> {
+    const index:number = todosArr.findIndex((todo) => todo.id === id);
+    if(index !== -1) {
+        const todo: Todo = todosArr[index];
+        await deleteTodoFirestore(uid, todo);
+        todosArr.splice(index,1);
+        deleteTodoElement(todo);
+        return true;
+    }
+    return false;
 }
 
 async function clearTodoList(): Promise<void> {
@@ -204,15 +216,57 @@ async function clearTodoList(): Promise<void> {
     }
 }
 
-async function deleteTodo(id: string | undefined): Promise<boolean> {
-    const index:number = todosArr.findIndex((todo) => todo.id === id);
-    if(index !== -1) {
-        await deleteTodoFirestore(uid, todosArr[index]);
-        todosArr.splice(index,1);
-        renderTodoList();
-        return true;
+function createTodoElement(todo: Todo): HTMLLIElement {
+    const checked:string = (todo.done) ? "checked": "";
+    const todoElement: HTMLLIElement = document.createElement("li");
+    todoElement.dataset.id = todo.id;
+    todoElement.classList.add("grid-list");
+    todoElement.innerHTML = `
+            <button title="Delete todo">X</button>
+            <p title="Update todo">${todo.text}</p>
+            <input type="checkbox" title="Toggle done" ${checked}>`;
+    return todoElement;
+}
+
+function addTodoElement(todo:Todo): void {
+    if(todoUL) {
+        todoUL.prepend(createTodoElement(todo));
     }
-    return false;
+}
+
+function findTodoElement(id: string): HTMLLIElement | null {
+    if(todoUL) {
+        for(const element of todoUL.children) {
+            if (element instanceof HTMLLIElement && element.dataset.id === id) {
+                return element;
+            }
+        }
+    }
+    return null;
+}
+
+function updateTodoElement(todo:Todo): void {
+    if(todoUL) {
+        const element: (HTMLLIElement | null) = findTodoElement(todo.id);
+        if(element) {
+            const pElement: (HTMLParagraphElement | null) = element.querySelector('p');
+            const inputElement: (HTMLInputElement | null) = element.querySelector('input');
+            if(pElement)
+                pElement.textContent = todo.text;
+            if(inputElement) {
+                inputElement.checked = todo.done;
+            }
+        } 
+    }
+}
+
+function deleteTodoElement(todo:Todo): void {
+    if(todoUL) {
+        const element: (HTMLLIElement | null) = findTodoElement(todo.id);
+        if(element){
+            element.remove();
+        }
+    }
 }
 
 function renderTodoList(): void {
@@ -253,15 +307,7 @@ async function renderTodoListAsync(uid: string): Promise<void> {
 function appendTodoList(todos: Todo[]): void {
     if(todoUL) {
         todos.forEach((todo:Todo) => {
-            const checked:string = (todo.done) ? "checked": "";
-            const todoElement = document.createElement("li");
-            todoElement.dataset.id = todo.id;
-            todoElement.classList.add("grid-list");
-            todoElement.innerHTML = `
-                    <button title="Delete todo">X</button>
-                    <p title="Update todo">${todo.text}</p>
-                    <input type="checkbox" title="Toggle done" ${checked}>`;
-            todoUL.appendChild(todoElement)
+            todoUL.appendChild(createTodoElement(todo))
         });
     }
 }

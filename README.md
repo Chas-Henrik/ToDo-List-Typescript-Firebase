@@ -14,7 +14,10 @@ The site uses HTML5, CSS & TypeScript and the following functionality is support
 7. The Todo items are timestamped and the Todo list is sorted by creation time in descending order (i.e. the newest todo first).
 
 Effort has been made making the application as user friendly as possible, where buttons are disabled for each application state (i.e. logged-in, logged-out) to prevent the user from making an invalid choice.
-Effort has also been made to read the todo list in smaller chunks when the User login to optimize performance and speed up 'the user's perceived load time'.
+
+The following performance optimization has been implemented:
+1. The Todo list is read in smaller chunks when the User login to optimize performance to improve 'the user's perceived load time'.
+2. Only the affected item is re-rendered in the Todo list when a Todo item is added, updated & deleted.
   
 The site has been published on GitHub pages:  
 Link to site:  
@@ -24,13 +27,9 @@ Link to site:
 ***
 *Known problems:*
 1. The authentication is the simplest possible where the User Credentials only contains E-mail Address & Password, and there is also no support for changing the Password after the User Account has been created.
-2. The application is not optimal from a performance perspective.
   
 *Notes:*
-1. The whole Todo list is re-rendered when a Todo item is added, updated or deleted and this is not optimal from a performance perspective (especially if the Todo list becomes large).
-2. The Todo list is sorted each time it's re-rendered which could become a performance issue as the Todo list grows larger.
-3. Firebase creates the Todo Id to assure that each Id is unique even if the same user accesses the database simultaneously from two (or more) devices.
-4. It is questionably if any User's Todo list will ever grow larger than 100 entries, so the performance issues could be added as 'future improvements' (when & if this become an issue).
-5. The Todo list is only read from the database at User Login and no effort has been made to keep the local content 'up to date' after that (in case the database us updated from another device). It is unlikely that the user updates the Todo list on multiple devices simultaneously though.
+1. Firebase creates the Todo Id to assure that each Todo Id is unique (even when the same user accesses the database simultaneously from two or more devices).
+2. The Todo list is only read from the database at User Login, and no effort has been made to keep the local content synchronized with the data base after that. So the local data might not reflect what is in the data base at any point of time (if the data is updated simultaneously on multiple devices). This scenario seems very unlikely though, and is left as a potential future improvement (if needed).
   
 ***
