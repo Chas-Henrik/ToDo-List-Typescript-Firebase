@@ -276,7 +276,7 @@ function clearTodoListElements(): void {
     }
 }
 
-// renderTodoList is left here in case it will become needed in the future
+// renderTodoList is left here in case it will become needed again in the future
 // function renderTodoList(): void {
 //     if(todoUL) {
 //         todoUL.innerHTML = todosArr.
