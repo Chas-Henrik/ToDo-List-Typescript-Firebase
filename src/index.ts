@@ -234,7 +234,7 @@ function addTodoElement(todo:Todo): void {
     }
 }
 
-function findTodoElement(id: string): HTMLLIElement | null {
+function findTodoElement(id: string): (HTMLLIElement | null) {
     if(todoUL) {
         for(const element of todoUL.children) {
             if (element instanceof HTMLLIElement && element.dataset.id === id) {
