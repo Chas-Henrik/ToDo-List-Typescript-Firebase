@@ -16,7 +16,7 @@ The site uses HTML5, CSS & TypeScript and the following functionality is support
 Effort has been made making the application as user friendly as possible, where buttons are disabled for each application state (i.e. logged-in, logged-out) to prevent the user from making an invalid choice.
 
 The following performance optimization has been implemented:
-1. The Todo list is read in smaller chunks when the User login to optimize performance to improve 'the user's perceived load time'.
+1. The Todo list is read in smaller chunks when the User login to improve 'the user's perceived load time'.
 2. Only the affected item is re-rendered in the Todo list when a Todo item is added, updated & deleted.
   
 The site has been published on GitHub pages:    
@@ -26,9 +26,10 @@ The site has been published on GitHub pages:
 ***
 *Known problems:*
 1. The authentication is the simplest possible where the User Credentials only contains E-mail Address & Password, and there is also no support for changing the Password after the User Account has been created.
+2. The Todo list is only read from the database at User Login, and no effort has been made to keep the local content synchronized with the data base after that. So the local data might not reflect what is in the data base at any point of time (if the data is updated simultaneously on multiple devices). This scenario seems very unlikely though, and is left as a potential future improvement (if needed).
   
 *Notes:*
 1. Firebase creates the Todo Id to assure that each Todo Id is unique (even when the same user accesses the database simultaneously from two or more devices).
-2. The Todo list is only read from the database at User Login, and no effort has been made to keep the local content synchronized with the data base after that. So the local data might not reflect what is in the data base at any point of time (if the data is updated simultaneously on multiple devices). This scenario seems very unlikely though, and is left as a potential future improvement (if needed).
+
   
 ***
