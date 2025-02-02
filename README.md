@@ -26,7 +26,7 @@ A 'twin project site' has been published on GitHub pages (since I don't have cre
 ***
 *Known problems:*
 1. The authentication is the simplest possible where the User Credentials only contains E-mail Address & Password, and there is also no support for changing the Password after the User Account has been created.
-2. The Todo list is only read from the database at User Login, and no effort has been made to keep the local content synchronized with the data base after that. So the local data might not reflect what is in the data base at any point of time (if the data is updated simultaneously on multiple devices). This scenario seems very unlikely though, and is left as a potential future improvement (if needed).
+2. The Todo list is only read once from the database (at User Login), and no effort has been made to keep the local content synchronized with the data base after that. So the local data might not reflect what is in the data base at any point of time (if the data is updated simultaneously on multiple devices). This scenario seems very unlikely though, and is left as a potential future improvement (if needed).
   
 *Notes:*
 1. Firebase creates the Todo Id to assure that each Todo Id is unique (even when the same user accesses the database simultaneously from two or more devices).
