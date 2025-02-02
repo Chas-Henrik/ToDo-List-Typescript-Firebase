@@ -19,7 +19,7 @@ The following performance optimization has been implemented:
 1. The Todo list is read in smaller chunks when the User login to improve 'the user's perceived load time'.
 2. Only the affected item is re-rendered in the Todo list when a Todo item is added, updated & deleted.
   
-The site has been published on GitHub pages:    
+A 'twin project site' has been published on GitHub pages (since I don't have credentials to change the settings on the original site):    
 [https://chas-henrik.github.io/ToDo-List-Typescript-Firebase/](https://chas-henrik.github.io/ToDo-List-Typescript-Firebase/)
   
 
@@ -30,6 +30,6 @@ The site has been published on GitHub pages:
   
 *Notes:*
 1. Firebase creates the Todo Id to assure that each Todo Id is unique (even when the same user accesses the database simultaneously from two or more devices).
-
+2. The Firebase API Key has been stored as an environment variable both on the local machine and on GitHub when deploying the 'twin project site'.
   
 ***
